@@ -2,10 +2,7 @@
 
 Award-winning caliber portfolio website engineered with real-time 3D WebGL background choreography, Web Audio API procedural sound synthesis, scroll-driven chapter narratives, and live interactive benchmarks.
 
-Inspired by:
-- [daikifujita.com](https://daikifujita.com/) (Awake vs Void dual mode, live local time clock, zero scrollbar, grid precision)
-- [byholm.co](https://byholm.co/) (Cinematic scroll rhythm, high-contrast editorial typography, proof metrics)
-- [ysuriadesign.co](https://ysuriadesign.co/) (Sound synthesis toggle, index navigation drawer, high-conversion "Let's build" finale)
+
 
 ## Tech Stack
 - **Framework:** React 19 + TypeScript + Vite

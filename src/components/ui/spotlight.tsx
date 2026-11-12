@@ -19,11 +19,11 @@ export function Spotlight({
   const [isHovered, setIsHovered] = useState(false);
   const [parentElement, setParentElement] = useState<HTMLElement | null>(null);
 
-  const mouseX = useSpring(0, springOptions);
-  const mouseY = useSpring(0, springOptions);
+  const mouseX = useSpring(-size / 2, springOptions);
+  const mouseY = useSpring(-size / 2, springOptions);
 
-  const spotlightLeft = useTransform(mouseX, (x) => `${x - size / 2}px`);
-  const spotlightTop = useTransform(mouseY, (y) => `${y - size / 2}px`);
+  const spotlightX = useTransform(mouseX, (x) => x - size / 2);
+  const spotlightY = useTransform(mouseY, (y) => y - size / 2);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -49,16 +49,17 @@ export function Spotlight({
   useEffect(() => {
     if (!parentElement) return;
 
-    parentElement.addEventListener('mousemove', handleMouseMove);
-    parentElement.addEventListener('mouseenter', () => setIsHovered(true));
-    parentElement.addEventListener('mouseleave', () => setIsHovered(false));
+    const onEnter = () => setIsHovered(true);
+    const onLeave = () => setIsHovered(false);
+
+    parentElement.addEventListener('mousemove', handleMouseMove, { passive: true });
+    parentElement.addEventListener('mouseenter', onEnter);
+    parentElement.addEventListener('mouseleave', onLeave);
 
     return () => {
       parentElement.removeEventListener('mousemove', handleMouseMove);
-      parentElement.removeEventListener('mouseenter', () => setIsHovered(true));
-      parentElement.removeEventListener('mouseleave', () =>
-        setIsHovered(false)
-      );
+      parentElement.removeEventListener('mouseenter', onEnter);
+      parentElement.removeEventListener('mouseleave', onLeave);
     };
   }, [parentElement, handleMouseMove]);
 
@@ -66,16 +67,17 @@ export function Spotlight({
     <motion.div
       ref={containerRef}
       className={cn(
-        'pointer-events-none absolute rounded-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops),transparent_80%)] blur-xl transition-opacity duration-200',
-        'from-zinc-50 via-zinc-100 to-zinc-200',
+        'pointer-events-none absolute top-0 left-0 rounded-full transition-opacity duration-300 will-change-transform',
         isHovered ? 'opacity-100' : 'opacity-0',
         className
       )}
       style={{
         width: size,
         height: size,
-        left: spotlightLeft,
-        top: spotlightTop,
+        x: spotlightX,
+        y: spotlightY,
+        background:
+          'radial-gradient(circle at center, rgba(226, 232, 240, 0.14) 0%, rgba(148, 163, 184, 0.06) 35%, transparent 70%)',
       }}
     />
   );

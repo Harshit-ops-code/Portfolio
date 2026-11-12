@@ -284,61 +284,113 @@ export function AnimatedGradient({
                 u_swirlIterations: gl.getUniformLocation(program, "u_swirlIterations"),
             };
 
+            const c1 = hexToRgba(params.color1);
+            const c2 = hexToRgba(params.color2);
+            const c3 = hexToRgba(params.color3);
+
+            gl.uniform1f(uniforms.u_pixelRatio, 1);
+            gl.uniform1f(uniforms.u_scale, params.scale);
+            gl.uniform1f(uniforms.u_rotation, (params.rotation * Math.PI) / 180);
+            gl.uniform4f(uniforms.u_color1, c1[0], c1[1], c1[2], c1[3]);
+            gl.uniform4f(uniforms.u_color2, c2[0], c2[1], c2[2], c2[3]);
+            gl.uniform4f(uniforms.u_color3, c3[0], c3[1], c3[2], c3[3]);
+            gl.uniform1f(uniforms.u_proportion, params.proportion / 100);
+            gl.uniform1f(uniforms.u_softness, params.softness / 100);
+            gl.uniform1f(uniforms.u_shape, PatternShapes[params.shape]);
+            gl.uniform1f(uniforms.u_shapeScale, params.shapeSize / 100);
+            gl.uniform1f(uniforms.u_distortion, params.distortion / 50);
+            gl.uniform1f(uniforms.u_swirl, params.swirl / 100);
+            gl.uniform1f(
+                uniforms.u_swirlIterations,
+                params.swirl === 0 ? 0 : params.swirlIterations
+            );
+
+            const drawFrame = (time: number) => {
+                const elapsed = (time - startTimeRef.current) / 1000;
+                const speed = (params.speed / 100) * 5;
+                gl.uniform1f(uniforms.u_time, elapsed * speed + params.offset * 0.01);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+            };
+
             const resize = () => {
-                const width = container.clientWidth;
-                const height = container.clientHeight;
-                const pixelRatio = window.devicePixelRatio || 1;
-                canvas.width = width * pixelRatio;
-                canvas.height = height * pixelRatio;
+                const width = Math.max(container.clientWidth, 1);
+                const height = Math.max(container.clientHeight, 1);
+                // Smooth noise/gradient look needs far fewer pixels than native DPR
+                const scaleFactor = Math.min(0.55, 680 / Math.max(width, height));
+                canvas.width = Math.max(120, Math.round(width * scaleFactor));
+                canvas.height = Math.max(120, Math.round(height * scaleFactor));
                 canvas.style.width = `${width}px`;
                 canvas.style.height = `${height}px`;
                 gl.viewport(0, 0, canvas.width, canvas.height);
+                gl.uniform2f(uniforms.u_resolution, canvas.width, canvas.height);
+                drawFrame(performance.now());
             };
 
+            startTimeRef.current = performance.now();
             resize();
             const resizeObserver = new ResizeObserver(resize);
             resizeObserver.observe(container);
 
-            startTimeRef.current = performance.now();
+            let isVisible = true;
+            let isDocumentVisible = !document.hidden;
+            let lastDrawTime = 0;
 
-            const animate = (time: number) => {
-                const elapsed = (time - startTimeRef.current) / 1000;
-                const speed = (params.speed / 100) * 5;
-
-                gl.uniform1f(uniforms.u_time, elapsed * speed + params.offset * 0.01);
-                gl.uniform2f(uniforms.u_resolution, canvas.width, canvas.height);
-                gl.uniform1f(uniforms.u_pixelRatio, window.devicePixelRatio || 1);
-                gl.uniform1f(uniforms.u_scale, params.scale);
-                gl.uniform1f(uniforms.u_rotation, (params.rotation * Math.PI) / 180);
-
-                const c1 = hexToRgba(params.color1);
-                const c2 = hexToRgba(params.color2);
-                const c3 = hexToRgba(params.color3);
-                gl.uniform4f(uniforms.u_color1, c1[0], c1[1], c1[2], c1[3]);
-                gl.uniform4f(uniforms.u_color2, c2[0], c2[1], c2[2], c2[3]);
-                gl.uniform4f(uniforms.u_color3, c3[0], c3[1], c3[2], c3[3]);
-
-                gl.uniform1f(uniforms.u_proportion, params.proportion / 100);
-                gl.uniform1f(uniforms.u_softness, params.softness / 100);
-                gl.uniform1f(uniforms.u_shape, PatternShapes[params.shape]);
-                gl.uniform1f(uniforms.u_shapeScale, params.shapeSize / 100);
-                gl.uniform1f(uniforms.u_distortion, params.distortion / 50);
-                gl.uniform1f(uniforms.u_swirl, params.swirl / 100);
-                gl.uniform1f(
-                    uniforms.u_swirlIterations,
-                    params.swirl === 0 ? 0 : params.swirlIterations
-                );
-
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
+            const startLoop = () => {
+                if (frameIdRef.current !== undefined || !isVisible || !isDocumentVisible) return;
                 frameIdRef.current = requestAnimationFrame(animate);
             };
 
-            frameIdRef.current = requestAnimationFrame(animate);
-
-            return () => {
+            const stopLoop = () => {
                 if (frameIdRef.current !== undefined) {
                     cancelAnimationFrame(frameIdRef.current);
+                    frameIdRef.current = undefined;
                 }
+            };
+
+            const animate = (time: number) => {
+                if (!isVisible || !isDocumentVisible) {
+                    frameIdRef.current = undefined;
+                    return;
+                }
+
+                // Cap fluid background shader at ~33fps to preserve GPU headroom
+                if (time - lastDrawTime >= 28) {
+                    lastDrawTime = time;
+                    drawFrame(time);
+                }
+
+                frameIdRef.current = requestAnimationFrame(animate);
+            };
+
+            const intersectionObserver = new IntersectionObserver(
+                (entries) => {
+                    isVisible = entries[0]?.isIntersecting ?? true;
+                    if (isVisible) {
+                        startLoop();
+                    } else {
+                        stopLoop();
+                    }
+                },
+                { rootMargin: "200px" }
+            );
+            intersectionObserver.observe(container);
+
+            const onVisibilityChange = () => {
+                isDocumentVisible = !document.hidden;
+                if (isDocumentVisible) {
+                    startLoop();
+                } else {
+                    stopLoop();
+                }
+            };
+            document.addEventListener("visibilitychange", onVisibilityChange);
+
+            startLoop();
+
+            return () => {
+                stopLoop();
+                intersectionObserver.disconnect();
+                document.removeEventListener("visibilitychange", onVisibilityChange);
                 resizeObserver.disconnect();
                 gl.deleteProgram(program);
                 gl.deleteShader(vertexShader);
@@ -365,8 +417,7 @@ export function AnimatedGradient({
                 style={{
                     borderRadius: radius,
                     ...style,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } as any}
+                } as CSSProperties}
             >
                 <canvas
                     ref={canvasRef}

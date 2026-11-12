@@ -55,10 +55,16 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
     background-color: var(--color-surface-base);
     color: var(--color-text-primary);
-    overflow-x: hidden;
-    scroll-behavior: smooth;
+    overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  @media (pointer: fine) {
+    html.has-custom-cursor,
+    html.has-custom-cursor * {
+      cursor: none !important;
+    }
   }
 
   ::-webkit-scrollbar {
@@ -78,6 +84,23 @@
 
 .font-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.font-kanit {
+  font-family: 'Kanit', sans-serif;
+}
+
+/* 3D Creator Hero Heading Gradient */
+.hero-heading {
+  background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.theme-jack {
+  background-color: #0C0C0C !important;
+  font-family: 'Kanit', sans-serif !important;
+  color: #D7E2EA;
 }
 
 .font-handwriting {

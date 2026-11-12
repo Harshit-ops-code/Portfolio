@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import KeycapOrb, { type Keycap } from '@/components/ui/keycap-orb';
-import { CheckCircle2, Keyboard } from 'lucide-react';
+import { gsap } from '@/lib/gsapSetup';
+import {
+  CheckCircle2,
+  Keyboard,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Pause,
+} from 'lucide-react';
 import {
   PythonLogo,
   CppLogo,
@@ -327,19 +336,296 @@ const HARSHIT_KEYS: Keycap[] = [
   { icon: 'check', label: 'Production Verified', finish: 'lime', hotkey: 'z' },
 ];
 
-export const TechStack: React.FC = () => {
-  const [selectedTech, setSelectedTech] = useState<TechItem>(ALL_TECH_ITEMS[0]);
-  const [pressedKeyText, setPressedKeyText] = useState<string>('LangGraph');
+type FinishKey = TechItem['finish'];
 
-  const handleSelectTech = (item: TechItem) => {
-    setSelectedTech(item);
-    setPressedKeyText(item.name);
+const FINISH_ACCENTS: Record<
+  FinishKey,
+  { glow: string; border: string; badge: string; text: string; spotlight: string }
+> = {
+  cobalt: {
+    glow: 'rgba(59, 130, 246, 0.38)',
+    border: 'rgba(96, 165, 250, 0.72)',
+    badge: 'bg-blue-500/15 text-blue-300 border-blue-400/30',
+    text: 'text-blue-300',
+    spotlight: 'rgba(59, 130, 246, 0.20)',
+  },
+  lime: {
+    glow: 'rgba(16, 185, 129, 0.35)',
+    border: 'rgba(52, 211, 153, 0.70)',
+    badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30',
+    text: 'text-emerald-300',
+    spotlight: 'rgba(16, 185, 129, 0.18)',
+  },
+  glass: {
+    glow: 'rgba(99, 102, 241, 0.40)',
+    border: 'rgba(129, 140, 248, 0.75)',
+    badge: 'bg-indigo-500/15 text-indigo-300 border-indigo-400/30',
+    text: 'text-indigo-300',
+    spotlight: 'rgba(99, 102, 241, 0.22)',
+  },
+  ash: {
+    glow: 'rgba(56, 189, 248, 0.34)',
+    border: 'rgba(56, 189, 248, 0.68)',
+    badge: 'bg-sky-500/15 text-sky-300 border-sky-400/30',
+    text: 'text-sky-300',
+    spotlight: 'rgba(56, 189, 248, 0.18)',
+  },
+  ink: {
+    glow: 'rgba(167, 139, 250, 0.36)',
+    border: 'rgba(167, 139, 250, 0.72)',
+    badge: 'bg-violet-500/15 text-violet-300 border-violet-400/30',
+    text: 'text-violet-300',
+    spotlight: 'rgba(167, 139, 250, 0.20)',
+  },
+};
+
+const CATEGORIES = [
+  { id: 'all', label: 'All Stack', count: 20 },
+  { id: 'ai', label: 'AI & Multi-Agent', count: 6 },
+  { id: 'backend', label: 'Backend & Systems', count: 6 },
+  { id: 'database', label: 'Databases & Storage', count: 4 },
+  { id: 'frontend', label: 'Frontend & Web', count: 4 },
+];
+
+function getItemsForCategory(category: string): TechItem[] {
+  return ALL_TECH_ITEMS.filter((item) => {
+    if (category === 'all') return true;
+    if (category === 'ai') return ['lg', 'hf', 'gq', 'gm', 'lc', 'cd'].includes(item.id);
+    if (category === 'backend') return ['fa', 'nd', 'cpp', 'py', 'dk', 'rc-alg'].includes(item.id);
+    if (category === 'database') return ['mg', 'sq', 'pg', 'ch-vec'].includes(item.id);
+    if (category === 'frontend') return ['nx', 'rc', 'ts', 'ex'].includes(item.id);
+    return true;
+  });
+}
+
+function modIndex(n: number, m: number): number {
+  return ((n % m) + m) % m;
+}
+
+export const TechStack: React.FC = () => {
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [wheelSlot, setWheelSlot] = useState<number>(0);
+  const [dragOffsetPx, setDragOffsetPx] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [autoSpin, setAutoSpin] = useState<boolean>(false);
+  const [customKeyText, setCustomKeyText] = useState<string | null>(null);
+  const [stageWidth, setStageWidth] = useState<number>(1100);
+
+  const sectionRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from('[data-stack-header] > *', {
+        y: 28,
+        opacity: 0,
+        duration: 0.75,
+        stagger: 0.08,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 82%',
+          once: true,
+        },
+      });
+
+      gsap.from('[data-stack-orb]', {
+        y: 44,
+        scale: 0.96,
+        opacity: 0,
+        duration: 0.9,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '[data-stack-orb]',
+          start: 'top 86%',
+          once: true,
+        },
+      });
+
+      gsap.from('[data-stack-wheel], [data-stack-inspector]', {
+        y: 36,
+        opacity: 0,
+        duration: 0.85,
+        stagger: 0.14,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '[data-stack-wheel]',
+          start: 'top 88%',
+          once: true,
+        },
+      });
+    }, section);
+
+    return () => ctx.revert();
+  }, []);
+  const dragMetaRef = useRef<{
+    active: boolean;
+    startX: number;
+    lastX: number;
+    lastTime: number;
+    velocityX: number;
+    moved: boolean;
+  }>({
+    active: false,
+    startX: 0,
+    lastX: 0,
+    lastTime: 0,
+    velocityX: 0,
+    moved: false,
+  });
+
+  const filteredTechItems = getItemsForCategory(activeCategory);
+  const itemCount = filteredTechItems.length || 1;
+
+  // Responsive geometry for the 3D horizontal wheel
+  const isMobile = stageWidth < 600;
+  const isTablet = stageWidth >= 600 && stageWidth < 980;
+  const wheelGeom = isMobile
+    ? { radiusX: 330, cardW: 172, cardH: 196, arcDrop: 84, depthZ: 190, dragStepPx: 115 }
+    : isTablet
+      ? { radiusX: 430, cardW: 198, cardH: 218, arcDrop: 110, depthZ: 250, dragStepPx: 140 }
+      : { radiusX: 525, cardW: 224, cardH: 238, arcDrop: 132, depthZ: 310, dragStepPx: 165 };
+
+  const effectiveProgress = wheelSlot - dragOffsetPx / wheelGeom.dragStepPx;
+  const centerSlot = Math.round(effectiveProgress);
+  const activeRealIndex = modIndex(wheelSlot, itemCount);
+  const displayRealIndex = modIndex(centerSlot, itemCount);
+  const selectedTech = filteredTechItems[displayRealIndex] || ALL_TECH_ITEMS[0];
+  const activeAccent = FINISH_ACCENTS[selectedTech.finish];
+
+  // Observe wheel container width for crisp responsive arc math
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    setStageWidth(el.clientWidth || 1100);
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setStageWidth(entry.contentRect.width);
+        }
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Active Keycap HUD text: custom override from physical key press or active center card
+  const activeItem = filteredTechItems[activeRealIndex] || ALL_TECH_ITEMS[0];
+  const pressedKeyText = customKeyText || activeItem.name;
+
+  // Step wheel by relative spoke delta
+  const stepWheel = useCallback((delta: number) => {
+    setCustomKeyText(null);
+    setWheelSlot((prev) => prev + delta);
+  }, []);
+
+  // Auto-spin timer (pauses while hovered or dragging)
+  useEffect(() => {
+    if (!autoSpin || isHovered || isDragging) return;
+    const id = window.setInterval(() => {
+      setWheelSlot((prev) => prev + 1);
+    }, 2800);
+    return () => window.clearInterval(id);
+  }, [autoSpin, isHovered, isDragging]);
+
+  // Drag handlers using window listeners so card clicks & dragging both work seamlessly
+  const handleWheelPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Ignore right/non-primary mouse buttons or clicks inside nested buttons like arrows
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-wheel-control="true"]')) return;
+
+    const now = performance.now();
+    dragMetaRef.current = {
+      active: true,
+      startX: e.clientX,
+      lastX: e.clientX,
+      lastTime: now,
+      velocityX: 0,
+      moved: false,
+    };
+    setIsDragging(true);
+    setDragOffsetPx(0);
   };
 
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const onPointerMove = (e: PointerEvent) => {
+      const meta = dragMetaRef.current;
+      if (!meta.active) return;
+
+      const delta = e.clientX - meta.startX;
+      if (Math.abs(delta) > 6) {
+        meta.moved = true;
+      }
+
+      const now = performance.now();
+      const dt = Math.max(8, now - meta.lastTime);
+      const instantVx = (e.clientX - meta.lastX) / dt;
+      meta.velocityX = meta.velocityX * 0.45 + instantVx * 0.55;
+      meta.lastX = e.clientX;
+      meta.lastTime = now;
+
+      setDragOffsetPx(delta);
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      const meta = dragMetaRef.current;
+      if (!meta.active) return;
+      meta.active = false;
+
+      const delta = e.clientX - meta.startX;
+      const projectedDelta = delta + meta.velocityX * 135;
+      let stepDelta = Math.round(-projectedDelta / wheelGeom.dragStepPx);
+
+      if (Math.abs(delta) > 26 && stepDelta === 0) {
+        stepDelta = delta < 0 ? 1 : -1;
+      }
+
+      if (stepDelta !== 0) {
+        setCustomKeyText(null);
+        setWheelSlot((prev) => prev + stepDelta);
+      }
+
+      setDragOffsetPx(0);
+      setIsDragging(false);
+
+      // Keep `moved` latched briefly through the synchronous `click` event dispatch
+      window.setTimeout(() => {
+        dragMetaRef.current.moved = false;
+      }, 60);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+    };
+  }, [isDragging, wheelGeom.dragStepPx]);
+
+  // Handle category filter change cleanly
+  const handleCategoryChange = (catId: string) => {
+    if (catId === activeCategory) return;
+    setActiveCategory(catId);
+    setWheelSlot(0);
+    setDragOffsetPx(0);
+    setCustomKeyText(null);
+  };
+
+  // Sync Keycap Orb clicks -> spin wheel smoothly to matching technology
   const handleKeycapPress = (key: Keycap) => {
     const icon = key.icon;
     const label = key.label || icon || 'Mechanical Key';
-    setPressedKeyText(label);
+    setCustomKeyText(label);
 
     const match = ALL_TECH_ITEMS.find(
       (t) =>
@@ -347,21 +633,77 @@ export const TechStack: React.FC = () => {
         t.name.toLowerCase().includes(label.toLowerCase()) ||
         label.toLowerCase().includes(t.name.toLowerCase())
     );
-    if (match) {
-      setSelectedTech(match);
+    if (!match) return;
+
+    const currentItems = getItemsForCategory(activeCategory);
+    const idxInCurrent = currentItems.findIndex((t) => t.id === match.id);
+
+    if (idxInCurrent >= 0) {
+      const currentMod = modIndex(wheelSlot, currentItems.length);
+      let diff = idxInCurrent - currentMod;
+      if (diff > currentItems.length / 2) diff -= currentItems.length;
+      if (diff < -currentItems.length / 2) diff += currentItems.length;
+      setWheelSlot((prev) => prev + diff);
+    } else {
+      const allIdx = ALL_TECH_ITEMS.findIndex((t) => t.id === match.id);
+      setActiveCategory('all');
+      setWheelSlot(allIdx >= 0 ? allIdx : 0);
+      setDragOffsetPx(0);
     }
   };
 
-  // Group into 3 columns
-  const col1 = ALL_TECH_ITEMS.slice(0, 7);
-  const col2 = ALL_TECH_ITEMS.slice(7, 14);
-  const col3 = ALL_TECH_ITEMS.slice(14, 20);
+  // Horizontal wheel/trackpad gesture on the wheel stage
+  const wheelLockRef = useRef<number>(0);
+  const handleWheelGesture = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 12) {
+      const now = performance.now();
+      if (now - wheelLockRef.current < 160) return;
+      wheelLockRef.current = now;
+      stepWheel(e.deltaX > 0 ? 1 : -1);
+    }
+  };
+
+  // Keyboard Left/Right navigation when wheel stage is focused
+  const handleWheelKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      stepWheel(1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      stepWheel(-1);
+    }
+  };
+
+  // Compute visible 9-slot circular window around centerSlot
+  // Outer slots (|offset| >= 3) stay mounted at opacity 0 so wrap transitions never flash across screen
+  const visibleSlots = [-4, -3, -2, -1, 0, 1, 2, 3, 4].map((rel) => centerSlot + rel);
+
+  const getCardTransform = (offset: number) => {
+    const thetaDeg = Math.max(-88, Math.min(88, offset * 24));
+    const thetaRad = (thetaDeg * Math.PI) / 180;
+    const absOff = Math.abs(offset);
+
+    const x = Math.sin(thetaRad) * wheelGeom.radiusX;
+    const y = (1 - Math.cos(thetaRad)) * wheelGeom.arcDrop;
+    const z = -(1 - Math.cos(thetaRad)) * wheelGeom.depthZ;
+    const rotateY = -thetaDeg * 0.56;
+    const rotateZ = thetaDeg * 0.16;
+    const scale = Math.max(0.56, 1.04 - absOff * 0.14);
+    const opacity = absOff >= 2.8 ? 0 : Math.max(0, 1 - Math.pow(absOff / 2.8, 1.45));
+    const zIndex = Math.round(60 - absOff * 12);
+
+    return { x, y, z, rotateY, rotateZ, scale, opacity, zIndex };
+  };
 
   return (
-    <section id="stack" className="py-24 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto z-10">
+    <section
+      ref={sectionRef}
+      id="stack"
+      className="py-24 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto z-10"
+    >
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
-        <div className="space-y-2">
+        <div data-stack-header className="space-y-2">
           <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 font-medium block">
             Skills &amp; Technologies
           </span>
@@ -375,11 +717,14 @@ export const TechStack: React.FC = () => {
       </div>
 
       {/* 3D MECHANICAL KEYCAP ORB FLOATING STAGE */}
-      <div className="rounded-3xl sm:rounded-[36px] bg-[#030306] border border-white/10 p-4 sm:p-7 shadow-2xl relative overflow-hidden mb-12">
+      <div
+        data-stack-orb
+        className="rounded-3xl sm:rounded-[36px] bg-[#030306] border border-white/10 p-4 sm:p-7 shadow-2xl relative overflow-hidden mb-14"
+      >
         {/* HUD Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-3 py-2 border-b border-white/[0.06] mb-4">
           <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
             <span className="font-mono text-xs text-white/80">
               Active Keycap: <strong className="text-white font-semibold">{pressedKeyText}</strong>
             </span>
@@ -392,7 +737,10 @@ export const TechStack: React.FC = () => {
         </div>
 
         {/* 3D Keycap Orb Canvas */}
-        <div className="relative w-full rounded-2xl overflow-hidden border border-white/5 bg-black/50 shadow-inner">
+        <div
+          data-cursor-text="DRAG ORB"
+          className="relative w-full rounded-2xl overflow-hidden border border-white/5 bg-black/50 shadow-inner"
+        >
           <KeycapOrb
             keys={HARSHIT_KEYS}
             rings={10}
@@ -413,155 +761,390 @@ export const TechStack: React.FC = () => {
         </div>
       </div>
 
-      {/* 3-COLUMN PILL MATRIX + LIVE TELEMETRY INSPECTOR CARD */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* LEFT: 3 Columns of Tech Pills (Exact Layout from User Screenshot with Real SVG Logos) */}
-        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-3">
-          {/* Column 1 */}
-          <div className="space-y-3">
-            {col1.map((item) => {
-              const isSelected = selectedTech.id === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleSelectTech(item)}
-                  className={`w-full flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#151724] border-indigo-500/80 shadow-[0_0_20px_rgba(99,102,241,0.25)]'
-                      : 'bg-[#090a10] border-white/[0.08] hover:border-white/20 hover:bg-[#0e1017]'
+      {/* ========================================================
+          3D HORIZONTAL WHEEL SLIDER + TELEMETRY INSPECTOR DECK
+         ======================================================== */}
+      <div className="space-y-6">
+        {/* Top Controls: Category Filter Pills + Wheel Auto-Spin & Index HUD */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`px-3.5 py-1.5 rounded-full font-mono text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeCategory === cat.id
+                    ? 'bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white border border-white/10'
+                }`}
+              >
+                <span>{cat.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    activeCategory === cat.id
+                      ? 'bg-black/15 text-black'
+                      : 'bg-white/10 text-white/60'
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center shrink-0 p-2 shadow-inner">
-                    {item.logo}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-sans font-semibold text-xs sm:text-sm text-white truncate">
-                      {item.name}
-                    </div>
-                    <div className="font-mono text-[10px] text-white/40 truncate">
-                      {item.label}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+                  {cat.count}
+                </span>
+              </button>
+            ))}
           </div>
 
-          {/* Column 2 */}
-          <div className="space-y-3">
-            {col2.map((item) => {
-              const isSelected = selectedTech.id === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleSelectTech(item)}
-                  className={`w-full flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#151724] border-indigo-500/80 shadow-[0_0_20px_rgba(99,102,241,0.25)]'
-                      : 'bg-[#090a10] border-white/[0.08] hover:border-white/20 hover:bg-[#0e1017]'
-                  }`}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center shrink-0 p-2 shadow-inner">
-                    {item.logo}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-sans font-semibold text-xs sm:text-sm text-white truncate">
-                      {item.name}
-                    </div>
-                    <div className="font-mono text-[10px] text-white/40 truncate">
-                      {item.label}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="font-mono text-xs text-white/50 hidden sm:inline">
+              SPOKE{' '}
+              <strong className="text-white">
+                {String(displayRealIndex + 1).padStart(2, '0')}
+              </strong>{' '}
+              / {String(itemCount).padStart(2, '0')}
+            </span>
 
-          {/* Column 3 */}
-          <div className="space-y-3">
-            {col3.map((item) => {
-              const isSelected = selectedTech.id === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleSelectTech(item)}
-                  className={`w-full flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#151724] border-indigo-500/80 shadow-[0_0_20px_rgba(99,102,241,0.25)]'
-                      : 'bg-[#090a10] border-white/[0.08] hover:border-white/20 hover:bg-[#0e1017]'
-                  }`}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center shrink-0 p-2 shadow-inner">
-                    {item.logo}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-sans font-semibold text-xs sm:text-sm text-white truncate">
-                      {item.name}
-                    </div>
-                    <div className="font-mono text-[10px] text-white/40 truncate">
-                      {item.label}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+            <button
+              onClick={() => setAutoSpin((s) => !s)}
+              className={`px-3 py-1.5 rounded-full font-mono text-[11px] border transition-all cursor-pointer flex items-center gap-1.5 ${
+                autoSpin
+                  ? 'bg-indigo-500/20 border-indigo-400/60 text-indigo-200'
+                  : 'bg-white/[0.04] border-white/10 text-white/60 hover:text-white hover:bg-white/[0.08]'
+              }`}
+              title="Toggle Auto-Spin Wheel"
+            >
+              {autoSpin ? <Pause size={12} /> : <Play size={12} />}
+              <span>{autoSpin ? 'Auto-Spin ON' : 'Auto-Spin'}</span>
+            </button>
           </div>
         </div>
 
-        {/* RIGHT: Live Telemetry Inspector Card (Exact Layout from User Screenshot with Real SVG Logo) */}
-        <div className="lg:col-span-4 sticky top-24">
-          <div className="rounded-3xl bg-[#08090e] border border-white/15 p-6 sm:p-7 shadow-2xl relative overflow-hidden space-y-6">
-            {/* Top Identity with Large Logo */}
-            <div className="flex items-center gap-4 border-b border-white/[0.08] pb-5">
-              <div className="w-14 h-14 rounded-2xl bg-black/80 border border-white/15 flex items-center justify-center p-3 shadow-lg shrink-0">
-                {selectedTech.logo}
-              </div>
-              <div>
-                <span className="font-mono text-[10px] text-indigo-400 font-semibold tracking-wider uppercase">
-                  Category: {selectedTech.category}
-                </span>
-                <h3 className="font-sans font-bold text-2xl text-white tracking-tight mt-0.5">
-                  {selectedTech.name}
-                </h3>
-              </div>
-            </div>
+        {/* ========================================================
+            3D CURVED HORIZONTAL WHEEL STAGE
+           ======================================================== */}
+        <div
+          ref={stageRef}
+          tabIndex={0}
+          data-stack-wheel
+          data-horizontal-wheel="true"
+          data-cursor-text="DRAG WHEEL"
+          onKeyDown={handleWheelKeyDown}
+          onWheel={handleWheelGesture}
+          onPointerDown={handleWheelPointerDown}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className={`relative w-full h-[350px] sm:h-[390px] flex flex-col items-center justify-center overflow-hidden select-none outline-none touch-pan-y ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
+          style={{
+            maskImage:
+              'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+            WebkitMaskImage:
+              'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+          }}
+        >
+          {/* Ambient center spotlight synced with active tech finish */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] sm:w-[500px] h-[240px] rounded-full pointer-events-none transition-colors duration-500"
+            style={{
+              background: `radial-gradient(circle at center, ${activeAccent.spotlight}, transparent 70%)`,
+            }}
+          />
 
-            {/* Technical Benchmark */}
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-1">
-              <span className="font-mono text-[10px] text-white/40 uppercase tracking-wider block">
-                Technical Benchmark
-              </span>
-              <div className="font-sans font-semibold text-sm sm:text-base text-indigo-300">
-                {selectedTech.benchmark}
-              </div>
-            </div>
+          {/* Subtle Curved Wheel Rim Guide Lines (SVG) */}
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none opacity-45"
+            viewBox="0 0 1200 400"
+            preserveAspectRatio="xMidYMid slice"
+          >
+            <defs>
+              <linearGradient id="wheel-arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(255,255,255,0)" />
+                <stop offset="25%" stopColor="rgba(129,140,248,0.22)" />
+                <stop offset="50%" stopColor="rgba(129,140,248,0.65)" />
+                <stop offset="75%" stopColor="rgba(129,140,248,0.22)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+              </linearGradient>
+            </defs>
+            <ellipse
+              cx="600"
+              cy="640"
+              rx="660"
+              ry="490"
+              fill="none"
+              stroke="url(#wheel-arc-grad)"
+              strokeWidth="1.5"
+              strokeDasharray="6 6"
+            />
+            <ellipse
+              cx="600"
+              cy="670"
+              rx="690"
+              ry="505"
+              fill="none"
+              stroke="rgba(255,255,255,0.06)"
+              strokeWidth="1"
+            />
+          </svg>
 
-            {/* Production Deployment */}
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-1">
-              <span className="font-mono text-[10px] text-white/40 uppercase tracking-wider block">
-                Production Deployment
-              </span>
-              <div className="font-sans font-medium text-xs sm:text-sm text-white/90">
-                {selectedTech.deployment}
-              </div>
-            </div>
+          {/* 3D Perspective Carousel Plane */}
+          <div
+            className="relative w-full h-[275px] sm:h-[295px] flex items-center justify-center"
+            style={{
+              perspective: '1200px',
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            {visibleSlots.map((vSlot) => {
+              const realIdx = modIndex(vSlot, itemCount);
+              const item = filteredTechItems[realIdx] || ALL_TECH_ITEMS[0];
+              const offset = vSlot - effectiveProgress;
+              const isCentered = Math.abs(offset) < 0.45;
+              const isVisible = Math.abs(offset) < 2.75;
+              const accent = FINISH_ACCENTS[item.finish];
+              const tf = getCardTransform(offset);
 
-            {/* Architectural Role */}
-            <div className="space-y-1.5">
-              <span className="font-mono text-[10px] text-white/40 uppercase tracking-wider block">
-                Architectural Role
-              </span>
-              <p className="font-sans text-xs sm:text-sm text-[#a1a1aa] leading-relaxed">
-                {selectedTech.role}
-              </p>
-            </div>
+              // Position newly mounted outer slots gently past the horizon
+              const entryDir = offset >= 0 ? 1 : -1;
+              const entryTf = getCardTransform(offset + entryDir * 0.9);
 
-            {/* Status Footer */}
-            <div className="pt-4 border-t border-white/[0.08] flex items-center gap-2 text-xs font-mono text-emerald-400">
-              <CheckCircle2 size={14} />
-              <span>Integrated &amp; tested in production</span>
-            </div>
+              return (
+                <motion.button
+                  key={`${activeCategory}-${vSlot}`}
+                  type="button"
+                  onClick={() => {
+                    if (dragMetaRef.current.moved) return;
+                    if (vSlot !== wheelSlot) {
+                      setCustomKeyText(null);
+                      setWheelSlot(vSlot);
+                    }
+                  }}
+                  initial={{
+                    x: entryTf.x,
+                    y: entryTf.y,
+                    z: entryTf.z,
+                    rotateY: entryTf.rotateY,
+                    rotateZ: entryTf.rotateZ,
+                    scale: entryTf.scale,
+                    opacity: 0,
+                  }}
+                  animate={{
+                    x: tf.x,
+                    y: tf.y,
+                    z: tf.z,
+                    rotateY: tf.rotateY,
+                    rotateZ: tf.rotateZ,
+                    scale: tf.scale,
+                    opacity: tf.opacity,
+                  }}
+                  transition={
+                    isDragging
+                      ? { duration: 0.04, ease: 'linear' }
+                      : { type: 'spring', stiffness: 280, damping: 28, mass: 0.85 }
+                  }
+                  style={{
+                    position: 'absolute',
+                    width: `${wheelGeom.cardW}px`,
+                    height: `${wheelGeom.cardH}px`,
+                    zIndex: tf.zIndex,
+                    transformStyle: 'preserve-3d',
+                    pointerEvents: isVisible ? 'auto' : 'none',
+                    borderColor: isCentered ? accent.border : 'rgba(255,255,255,0.10)',
+                    boxShadow: isCentered
+                      ? `0 22px 50px -12px rgba(0,0,0,0.85), 0 0 36px -4px ${accent.glow}`
+                      : '0 14px 32px -12px rgba(0,0,0,0.75)',
+                  }}
+                  className={`rounded-3xl p-4 sm:p-5 flex flex-col justify-between text-left border transition-colors duration-300 group select-none cursor-pointer ${
+                    isCentered
+                      ? 'bg-gradient-to-b from-[#171926] via-[#0e1018] to-[#08090e]'
+                      : 'bg-gradient-to-b from-[#10121b]/95 via-[#090a10]/95 to-[#06070b]/95 hover:border-white/25'
+                  }`}
+                >
+                  {/* Top Specular Rim Highlight on Active Card */}
+                  {isCentered && (
+                    <div
+                      className="absolute inset-x-6 top-0 h-[1px] pointer-events-none"
+                      style={{
+                        background: `linear-gradient(90deg, transparent, ${accent.border}, transparent)`,
+                      }}
+                    />
+                  )}
+
+                  {/* Top Row: Category + Hotkey */}
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <span
+                      className={`font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full border truncate ${
+                        isCentered
+                          ? accent.badge
+                          : 'bg-white/[0.05] text-white/55 border-white/10'
+                      }`}
+                    >
+                      {item.category}
+                    </span>
+
+                    {item.hotkey && (
+                      <span className="font-mono text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-white/[0.06] text-white/60 border border-white/10 shrink-0">
+                        [{item.hotkey.toUpperCase()}]
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Centerpiece: Floating Logo Lens */}
+                  <div className="my-auto flex flex-col items-center text-center py-2">
+                    <div
+                      className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center p-3 border relative transition-transform duration-300 ${
+                        isCentered
+                          ? 'bg-black/90 border-white/25 scale-105'
+                          : 'bg-black/65 border-white/10 group-hover:scale-105'
+                      }`}
+                      style={
+                        isCentered
+                          ? { boxShadow: `0 0 24px -4px ${accent.glow}` }
+                          : undefined
+                      }
+                    >
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center">
+                        {item.logo}
+                      </div>
+                    </div>
+
+                    <h4 className="font-kanit font-bold text-base sm:text-xl text-white tracking-tight mt-3 leading-tight truncate max-w-full">
+                      {item.name}
+                    </h4>
+                    <p className="font-mono text-[10px] sm:text-[11px] text-white/45 truncate max-w-full mt-0.5">
+                      {item.deployment}
+                    </p>
+                  </div>
+
+                  {/* Bottom Metric Strip */}
+                  <div className="pt-2.5 border-t border-white/[0.08] flex items-center justify-between gap-2 w-full">
+                    <span
+                      className={`font-mono text-[10px] truncate ${
+                        isCentered ? accent.text : 'text-white/60'
+                      }`}
+                    >
+                      {item.benchmark}
+                    </span>
+
+                    {isCentered && (
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                    )}
+                  </div>
+                </motion.button>
+              );
+            })}
           </div>
+
+          {/* Floating Prev / Next Circular Controls on Left & Right Edges */}
+          <button
+            type="button"
+            data-wheel-control="true"
+            onClick={() => stepWheel(-1)}
+            aria-label="Spin wheel backward"
+            className="flex absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-[75] w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/75 hover:bg-white text-white hover:text-black border border-white/20 items-center justify-center backdrop-blur-md transition-all shadow-xl cursor-pointer"
+          >
+            <ChevronLeft size={18} />
+          </button>
+
+          <button
+            type="button"
+            data-wheel-control="true"
+            onClick={() => stepWheel(1)}
+            aria-label="Spin wheel forward"
+            className="flex absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-[75] w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/75 hover:bg-white text-white hover:text-black border border-white/20 items-center justify-center backdrop-blur-md transition-all shadow-xl cursor-pointer"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        {/* ========================================================
+            SYNCHRONIZED LIVE TELEMETRY INSPECTOR DECK
+           ======================================================== */}
+        <div
+          data-stack-inspector
+          className="rounded-3xl bg-[#07080d]/95 border border-white/12 p-6 sm:p-8 shadow-2xl relative overflow-hidden"
+        >
+          <div
+            className="absolute -top-24 -right-24 w-80 h-80 rounded-full pointer-events-none transition-colors duration-500"
+            style={{
+              background: `radial-gradient(circle at center, ${activeAccent.spotlight}, transparent 70%)`,
+            }}
+          />
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedTech.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10"
+            >
+              {/* Col 1: Tech Identity Lockup */}
+              <div className="lg:col-span-4 flex items-center gap-4 border-b lg:border-b-0 lg:border-r border-white/[0.08] pb-5 lg:pb-0 lg:pr-6">
+                <div
+                  className="w-16 h-16 rounded-2xl bg-black/85 border border-white/15 flex items-center justify-center p-3 shadow-lg shrink-0"
+                  style={{ boxShadow: `0 0 24px -6px ${activeAccent.glow}` }}
+                >
+                  <div className="w-9 h-9 flex items-center justify-center">
+                    {selectedTech.logo}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <span
+                    className={`font-mono text-[10px] font-semibold tracking-wider uppercase block ${activeAccent.text}`}
+                  >
+                    {selectedTech.category}
+                  </span>
+                  <h3 className="font-kanit font-bold text-2xl sm:text-3xl text-white tracking-tight mt-0.5 truncate">
+                    {selectedTech.name}
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-emerald-400">
+                    <CheckCircle2 size={13} />
+                    <span>Core Stack</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Col 2: Highlight + Where It's Used */}
+              <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 border-b lg:border-b-0 lg:border-r border-white/[0.08] pb-5 lg:pb-0 lg:pr-6">
+                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-1">
+                  <span className="font-mono text-[10px] text-white/40 uppercase tracking-wider block">
+                    Benchmark
+                  </span>
+                  <div className={`font-sans font-semibold text-sm ${activeAccent.text}`}>
+                    {selectedTech.benchmark}
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-1">
+                  <span className="font-mono text-[10px] text-white/40 uppercase tracking-wider block">
+                    Used In
+                  </span>
+                  <div className="font-sans font-medium text-sm text-white/90">
+                    {selectedTech.deployment}
+                  </div>
+                </div>
+              </div>
+
+              {/* Col 3: Role + Hotkey */}
+              <div className="lg:col-span-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-white/40 uppercase tracking-wider">
+                    How I Use It
+                  </span>
+                  {selectedTech.hotkey && (
+                    <span className="font-mono text-[10px] text-white/45">
+                      Keycap:{' '}
+                      <kbd className="text-white font-bold bg-white/10 px-1.5 py-0.5 rounded">
+                        [{selectedTech.hotkey.toUpperCase()}]
+                      </kbd>
+                    </span>
+                  )}
+                </div>
+                <p className="font-sans text-xs sm:text-sm text-[#a1a1aa] leading-relaxed">
+                  {selectedTech.role}
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>

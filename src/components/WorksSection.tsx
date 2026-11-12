@@ -1,7 +1,25 @@
-import React, { useState } from 'react';
-import { FolderGit2 } from 'lucide-react';
-import GlassFolder from './ui/glass-folder-cards';
-import type { FolderFile, FolderMenuItem } from './ui/glass-folder-cards';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValue,
+  useSpring,
+  AnimatePresence,
+  type MotionValue,
+} from 'framer-motion';
+import {
+  X,
+  ZoomIn,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+} from 'lucide-react';
+import { LiveProjectButton } from './ui/LiveProjectButton';
+import { Magnet } from './ui/Magnet';
+import { GithubIcon } from './Icons';
+import { gsap } from '../lib/gsapSetup';
 
 import truthshieldImg from '../assets/truthshield.png';
 import truthshieldThreatsImg from '../assets/truthshield-threats.png';
@@ -9,314 +27,886 @@ import baseraImg from '../assets/basera.png';
 import baseraPortalImg from '../assets/basera-portal.png';
 import lexisImg from '../assets/lexis.png';
 import lexisEngineImg from '../assets/lexis-engine.png';
+import prahariImg from '../assets/prahari.jpg';
+import prahariMapImg from '../assets/prahari-map.jpg';
+import govoltImg from '../assets/govolt.jpg';
+import govoltCycleImg from '../assets/govolt-cycle.jpg';
 
-type CategoryFilter = 'all' | 'ai' | 'fullstack' | 'security';
-
-interface ProjectItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  category: CategoryFilter;
-  tags: string[];
-  liveUrl: string;
-  githubUrl: string;
-  badge: string;
-  folderTone: 'dark' | 'light';
-  folderArt: 'aurora' | 'ember' | 'dusk' | 'glacier' | 'verdant';
-  folderLabel: string;
-  folderMeta: string;
-  files: FolderFile[];
-  menu: FolderMenuItem[];
+interface ProjectMetric {
+  label: string;
+  value: string;
 }
 
-const PROJECTS: ProjectItem[] = [
+interface ProjectCardData {
+  id: string;
+  number: string;
+  category: string;
+  name: string;
+  tagline: string;
+  domainUrl: string;
+  metrics: ProjectMetric[];
+  stack: string[];
+  images: {
+    primary: string;
+    primaryLabel: string;
+    secondary: string;
+    secondaryLabel: string;
+  };
+  liveUrl: string;
+  githubUrl: string;
+  accentColor: string;
+}
+
+const FLAGSHIP_PROJECTS: ProjectCardData[] = [
   {
     id: 'lexis-ai',
-    title: 'Lexis AI Content Orchestration',
-    subtitle: 'Modular 8-stage stateful LangGraph pipeline with ChromaDB RAG auditing and parallel C++ translation.',
-    category: 'ai',
-    tags: ['#LangGraph', '#FastAPI', '#GroqLPU', '#ChromaDB', '#ParallelCpp'],
+    number: '01',
+    category: 'Autonomous Multi-Agent · Top 7% Nationally',
+    name: 'Lexis AI Engine',
+    tagline:
+      '8-Stage Stateful LangGraph Pipeline with RAG Fact-Checking & Parallel C++ Localization',
+    domainUrl: 'lex-is-ai.vercel.app/app',
+    metrics: [
+      { label: 'Orchestration', value: '8 Nodes' },
+      { label: 'LLM Latency', value: '<350ms TTFT' },
+      { label: 'C++ Engine', value: '<40ms Parallel' },
+    ],
+    stack: ['LangGraph', 'Groq Llama-3', 'ChromaDB RAG', 'FastAPI', 'C++', 'Docker'],
+    images: {
+      primary: lexisImg,
+      primaryLabel: 'Multi-Agent Workspace & 3D Neural Core',
+      secondary: lexisEngineImg,
+      secondaryLabel: '6-Stage LangGraph & 5-Layer Compliance Pipeline',
+    },
     liveUrl: 'https://lex-is-ai.vercel.app/app/',
     githubUrl: 'https://github.com/Harshit-ops-code',
-    badge: 'Phase 2 ET Hackathon · Top 6k Finalist',
-    folderTone: 'dark',
-    folderArt: 'aurora',
-    folderLabel: 'Lexis AI',
-    folderMeta: '8 Stages · Top 6k',
-    files: [
-      {
-        name: '6-Node Pipeline',
-        meta: 'LangGraph · ChromaDB',
-        image: lexisEngineImg,
-        href: 'https://lex-is-ai.vercel.app/app/',
-      },
-      {
-        name: 'Compliance Audit',
-        meta: '5-Layer Self-Correcting',
-        image: lexisImg,
-        href: 'https://lex-is-ai.vercel.app/app/',
-      },
-      {
-        name: 'C++ Parallel Engine',
-        meta: 'Sub-40ms Translation',
-        art: 'aurora',
-        href: 'https://github.com/Harshit-ops-code',
-      },
-      {
-        name: 'FastAPI Backend',
-        meta: 'Pytest 100% Coverage',
-        art: 'verdant',
-        href: 'https://github.com/Harshit-ops-code',
-      },
-    ],
-    menu: [
-      {
-        label: 'Launch Live App ↗',
-        onSelect: () => window.open('https://lex-is-ai.vercel.app/app/', '_blank'),
-      },
-      {
-        label: 'View Repository ↗',
-        onSelect: () => window.open('https://github.com/Harshit-ops-code', '_blank'),
-      },
-    ],
+    accentColor: '#818cf8',
   },
   {
     id: 'truthshield',
-    title: 'TruthShield Sentinel Core',
-    subtitle: 'High-throughput security API for real-time visual forensics and text scam identification with Manifest V3 extension.',
-    category: 'security',
-    tags: ['#DeepfakeForensics', '#HuggingFace', '#GroqLPU', '#ManifestV3'],
+    number: '02',
+    category: 'Cybersecurity · Forensic AI & Manifest V3',
+    name: 'TruthShield Sentinel',
+    tagline:
+      'Real-Time Deepfake Vision Forensics & <120ms Phishing Defense with Browser Extension',
+    domainUrl: 'truthshield-nu.vercel.app',
+    metrics: [
+      { label: 'Forensic Acc.', value: '92% Vision' },
+      { label: 'Text Audit', value: '<120ms REST' },
+      { label: 'Extension', value: 'Manifest V3' },
+    ],
+    stack: ['Hugging Face CV', 'Gemini Multimodal', 'FastAPI', 'Node.js', 'Chrome V3'],
+    images: {
+      primary: truthshieldImg,
+      primaryLabel: 'Biometric Safety Sandbox & Live Hologram Feed',
+      secondary: truthshieldThreatsImg,
+      secondaryLabel: 'Real-Time Deepfake & Threat Landscape Matrix',
+    },
     liveUrl: 'https://truthshield-nu.vercel.app/',
     githubUrl: 'https://github.com/Harshit-ops-code',
-    badge: 'API + Chrome Extension V3',
-    folderTone: 'dark',
-    folderArt: 'glacier',
-    folderLabel: 'TruthShield Core',
-    folderMeta: 'API + Extension · 92% Acc',
-    files: [
-      {
-        name: 'Threat Landscape',
-        meta: 'Deepfake & Phishing Screen',
-        image: truthshieldThreatsImg,
-        href: 'https://truthshield-nu.vercel.app/',
-      },
-      {
-        name: '3D Hologram Sandbox',
-        meta: 'Biometric Mesh Scan',
-        image: truthshieldImg,
-        href: 'https://truthshield-nu.vercel.app/',
-      },
-      {
-        name: 'Manifest V3 Ext',
-        meta: 'Context-Menu Audits',
-        art: 'glacier',
-        href: 'https://github.com/Harshit-ops-code',
-      },
-      {
-        name: 'Dual-Engine Core',
-        meta: 'Groq + Gemini Multimodal',
-        art: 'ember',
-        href: 'https://github.com/Harshit-ops-code',
-      },
-    ],
-    menu: [
-      {
-        label: 'Launch Forensic Sandbox ↗',
-        onSelect: () => window.open('https://truthshield-nu.vercel.app/', '_blank'),
-      },
-      {
-        label: 'View Extension GitHub ↗',
-        onSelect: () => window.open('https://github.com/Harshit-ops-code', '_blank'),
-      },
-    ],
+    accentColor: '#38bdf8',
   },
   {
-    id: 'homie',
-    title: 'Basera & Homie',
-    subtitle: 'India’s first direct relocation engine eliminating brokers with streaming LLM landlord negotiations.',
-    category: 'fullstack',
-    tags: ['#Nextjs16', '#GroqStreaming', '#RayCastingGIS', '#MongoDNS'],
+    id: 'basera',
+    number: '03',
+    category: 'Full-Stack GIS · Zero-Broker Relocation',
+    name: 'Basera & Homie',
+    tagline:
+      'Direct Relocation Engine with <8ms Ray-Casting Geo Search & Streaming LLM Negotiation',
+    domainUrl: 'homie-two-pi.vercel.app',
+    metrics: [
+      { label: 'Cold Start', value: '-92% DNS Patch' },
+      { label: 'Ray-Casting', value: '<8ms / 1k Pts' },
+      { label: 'Negotiation', value: '<350ms TTFT' },
+    ],
+    stack: ['Next.js 16', 'Groq Streaming', 'MongoDB', 'Ray-Casting Alg', 'TypeScript'],
+    images: {
+      primary: baseraImg,
+      primaryLabel: 'Zero-Broker Direct Relocation Portal',
+      secondary: baseraPortalImg,
+      secondaryLabel: 'Live City Intelligence & Metro Corridor Matrix',
+    },
     liveUrl: 'https://homie-two-pi.vercel.app/',
     githubUrl: 'https://github.com/Harshit-ops-code',
-    badge: 'Live Deployment · Next.js 16',
-    folderTone: 'dark',
-    folderArt: 'ember',
-    folderLabel: 'Basera & Homie',
-    folderMeta: 'Next.js 16 · Zero Broker',
-    files: [
-      {
-        name: 'Delhi NCR Hub',
-        meta: '1,200+ Verified Stays',
-        image: baseraPortalImg,
-        href: 'https://homie-two-pi.vercel.app/',
-      },
-      {
-        name: 'Negotiation Engine',
-        meta: 'Groq Llama-3 <350ms TTFT',
-        image: baseraImg,
-        href: 'https://homie-two-pi.vercel.app/',
-      },
-      {
-        name: 'Ray-Casting GIS',
-        meta: '<8ms Poly Containment',
-        art: 'ember',
-        href: 'https://github.com/Harshit-ops-code',
-      },
-      {
-        name: 'DNS Cache Patch',
-        meta: '-92% Cold Starts',
-        art: 'dusk',
-        href: 'https://github.com/Harshit-ops-code',
-      },
-    ],
-    menu: [
-      {
-        label: 'Launch Portal ↗',
-        onSelect: () => window.open('https://homie-two-pi.vercel.app/', '_blank'),
-      },
-      {
-        label: 'View Architecture GitHub ↗',
-        onSelect: () => window.open('https://github.com/Harshit-ops-code', '_blank'),
-      },
-    ],
+    accentColor: '#34d399',
   },
 ];
 
-export const WorksSection: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
-  const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({
-    'lexis-ai': true,
-    'truthshield': true,
-    'homie': true,
-  });
+const FRONTEND_PROJECTS: ProjectCardData[] = [
+  {
+    id: 'prahari',
+    number: '04',
+    category: 'SIH 2026 Concept · Frontend UI',
+    name: 'P.R.A.H.A.R.I.',
+    tagline:
+      'Predictive ATM Cashout Interception Interface with Spatial Radar & Live Leaflet Node Mapper UI',
+    domainUrl: 'parahari.vercel.app',
+    metrics: [
+      { label: 'Scope', value: 'SIH 2026 UI' },
+      { label: 'Mapping', value: 'Leaflet Live' },
+      { label: 'Module', value: 'NCRP Matrix' },
+    ],
+    stack: ['React', 'TypeScript', 'Leaflet Maps', 'Tailwind CSS', 'Frontend UI'],
+    images: {
+      primary: prahariImg,
+      primaryLabel: 'Overview · Predictive ATM Interception Hero',
+      secondary: prahariMapImg,
+      secondaryLabel: 'AI Geospatial Node Mapper · Live Satellite Feed',
+    },
+    liveUrl: 'https://parahari.vercel.app/',
+    githubUrl: 'https://github.com/Harshit-ops-code/PARAHARI',
+    accentColor: '#a855f7',
+  },
+  {
+    id: 'govolt',
+    number: '05',
+    category: 'CleanTech Concept · Frontend UI',
+    name: 'GoVolt Network',
+    tagline:
+      '100% Circular EV Battery Swap Interface featuring Station Telemetry Card & Zero-Waste Ring',
+    domainUrl: 'govolt.vercel.app',
+    metrics: [
+      { label: 'Station', value: '4.2 kW UI' },
+      { label: 'Lifecycle', value: '0% Landfill' },
+      { label: 'Focus', value: 'Frontend UI' },
+    ],
+    stack: ['React', 'Tailwind CSS', 'Motion', 'UI Concept', 'Vercel'],
+    images: {
+      primary: govoltImg,
+      primaryLabel: 'Circular Battery Network · Station Active Card',
+      secondary: govoltCycleImg,
+      secondaryLabel: 'Second-Life Solar Storage & 0% Waste Ring',
+    },
+    liveUrl: 'https://govolt.vercel.app/',
+    githubUrl: 'https://github.com/Harshit-ops-code/Govolt',
+    accentColor: '#10b981',
+  },
+];
 
-  const filteredProjects = PROJECTS.filter(
-    (p) => activeCategory === 'all' || p.category === activeCategory
+interface StickyCardProps {
+  project: ProjectCardData;
+  index: number;
+  totalCards: number;
+  progress: MotionValue<number>;
+  onOpenGallery: (project: ProjectCardData, initialSlide: 0 | 1) => void;
+}
+
+const StickyProjectCard: React.FC<StickyCardProps> = ({
+  project,
+  index,
+  totalCards,
+  progress,
+  onOpenGallery,
+}) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [activePreview, setActivePreview] = useState<'primary' | 'secondary'>('primary');
+
+  // Scroll-linked entry parallax inside each card's browser stage
+  const { scrollYProgress: entryProgress } = useScroll({
+    target: wrapperRef,
+    offset: ['start end', 'start start'],
+  });
+  const showcaseY = useTransform(entryProgress, [0, 1], [24, 0]);
+  const showcaseScale = useTransform(entryProgress, [0, 1], [0.96, 1]);
+
+  // Stacking scale & depth dimming synchronized across cardsTrackRef
+  const isLast = index === totalCards - 1;
+  const targetScale = 1 - (totalCards - 1 - index) * 0.04;
+  const scrollableSpan = Math.max(1, totalCards * 82 - 100);
+  const startCover = isLast ? 0 : Math.min(0.95, Math.max(0, (index * 82) / scrollableSpan));
+
+  const stackScale = useTransform(
+    progress,
+    isLast ? [0, 1] : [startCover, 1],
+    isLast ? [1, 1] : [1, targetScale]
   );
 
-  const handleFolderOpenChange = (id: string, isOpen: boolean) => {
-    setOpenFolders((prev) => ({ ...prev, [id]: isOpen }));
+  const maxDimOpacity = Math.min(0.38, (totalCards - 1 - index) * 0.14);
+  const dimOpacity = useTransform(
+    progress,
+    isLast ? [0, 1] : [startCover, 1],
+    isLast ? [0, 0] : [0, maxDimOpacity]
+  );
+
+  // Smooth interactive 3D pointer tilt on hover
+  const tiltXRaw = useMotionValue(0);
+  const tiltYRaw = useMotionValue(0);
+  const rotateX = useSpring(tiltXRaw, { stiffness: 220, damping: 24 });
+  const rotateY = useSpring(tiltYRaw, { stiffness: 220, damping: 24 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    tiltXRaw.set(-py * 3.5);
+    tiltYRaw.set(px * 3.5);
+    el.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
+    el.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
   };
 
+  const handleMouseLeave = () => {
+    tiltXRaw.set(0);
+    tiltYRaw.set(0);
+  };
+
+  const displayedScreenshot =
+    activePreview === 'primary' ? project.images.primary : project.images.secondary;
+  const displayedLabel =
+    activePreview === 'primary' ? project.images.primaryLabel : project.images.secondaryLabel;
+
   return (
-    <section id="works" className="py-24 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto z-10">
-      {/* Works Section Header & Filter Pills */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-mono text-xs uppercase tracking-widest text-white/50">
-              Interactive 3D Glass Dossiers
+    <div
+      ref={wrapperRef}
+      className="h-[82vh] flex items-start justify-center sticky select-none"
+      style={{
+        // Sits cleanly below fixed floating navbar dock (top-5, ends ~68px)
+        top: `calc(5.25rem + ${index * 22}px)`,
+        zIndex: index + 10,
+        perspective: '1400px',
+      }}
+    >
+      <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          scale: stackScale,
+          rotateX,
+          rotateY,
+          transformStyle: 'preserve-3d',
+        }}
+        className="relative w-full max-w-6xl mx-auto rounded-[32px] sm:rounded-[42px] md:rounded-[50px] border-2 border-[#D7E2EA]/85 bg-[#0C0C0C] p-4 sm:p-5 md:p-6 shadow-[0_32px_80px_-16px_rgba(0,0,0,0.96)] origin-top transition-colors duration-300 group overflow-hidden"
+      >
+        {/* Depth Dim Overlay for stacked cards beneath */}
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-0 bg-black pointer-events-none z-20"
+          style={{ opacity: dimOpacity }}
+        />
+
+        {/* Interactive Pointer Spotlight */}
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(560px circle at var(--spot-x, 50%) var(--spot-y, 20%), rgba(215, 226, 234, 0.08), transparent 65%)',
+          }}
+        />
+
+        {/* Ambient Corner Accent Glow */}
+        <div
+          className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-25 pointer-events-none transition-opacity duration-500 group-hover:opacity-45"
+          style={{
+            background: `radial-gradient(circle at center, ${project.accentColor}, transparent 70%)`,
+          }}
+        />
+
+        {/* ========================================================
+            TOP ROW: Huge Number, Category, Name, Action Controls
+           ======================================================== */}
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-3.5 sm:mb-5 pb-3.5 sm:pb-4 border-b border-[#D7E2EA]/15">
+          <div className="flex items-center gap-3.5 sm:gap-5 min-w-0">
+            <span
+              className="font-kanit font-black text-[#D7E2EA] leading-none shrink-0"
+              style={{ fontSize: 'clamp(2.2rem, 5vw, 4.2rem)' }}
+            >
+              {project.number}
             </span>
+
+            <div className="flex flex-col min-w-0">
+              <span className="text-[#D7E2EA]/75 font-mono uppercase tracking-wider text-[10px] sm:text-xs flex items-center gap-2">
+                <span
+                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{ backgroundColor: project.accentColor }}
+                />
+                {project.category}
+              </span>
+              <h3 className="text-[#D7E2EA] font-kanit font-semibold uppercase tracking-tight text-lg sm:text-2xl md:text-3xl truncate mt-0.5">
+                {project.name}
+              </h3>
+            </div>
           </div>
-          <h2 className="font-sans font-bold text-5xl sm:text-6xl text-white tracking-tight">
-            Works.
-          </h2>
-          <p className="font-sans text-sm text-white/60 mt-2 max-w-xl">
-            Physical frosted-glass folders containing production architectures, live screen captures, and verified benchmarks. Hover to lean · click to unseal or launch apps.
+
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <a
+              href={project.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="View Source on GitHub"
+              data-cursor-text="SOURCE"
+              className="p-2.5 sm:p-3 rounded-full border border-[#D7E2EA]/40 hover:border-[#D7E2EA] text-[#D7E2EA] hover:bg-[#D7E2EA]/10 transition-all cursor-pointer shadow-sm active:scale-95"
+            >
+              <GithubIcon size={16} />
+            </a>
+
+            <Magnet padding={40} strength={3}>
+              <LiveProjectButton
+                href={project.liveUrl}
+                label="Live Project"
+                data-cursor-text="LIVE ↗"
+              />
+            </Magnet>
+          </div>
+        </div>
+
+        {/* ========================================================
+            BOTTOM ROW: 40% System Architecture + Telemetry / 60% Interactive Dark Browser Showcase
+           ======================================================== */}
+        <div className="relative z-10 flex flex-col lg:flex-row gap-3.5 sm:gap-5 items-stretch">
+          {/* LEFT COLUMN (40%): Architecture Preview + Dark Metrics Card */}
+          <div className="w-full lg:w-[40%] flex flex-col gap-3 sm:gap-4 justify-between">
+            {/* Top Left: Framed Secondary Architecture View (aspect 2.1:1 matches raw 1024x480 cleanly) */}
+            <div
+              onClick={() => onOpenGallery(project, 1)}
+              data-cursor-text="INSPECT"
+              className="w-full aspect-[16/8.2] max-h-[195px] overflow-hidden rounded-[22px] sm:rounded-[28px] bg-[#13151d] border border-white/12 p-1.5 sm:p-2 relative group/mini cursor-pointer shadow-inner"
+            >
+              <div className="w-full h-full rounded-[16px] sm:rounded-[22px] overflow-hidden relative bg-white/5">
+                <img
+                  src={project.images.secondary}
+                  alt={`${project.name} architecture overview`}
+                  loading="lazy"
+                  draggable={false}
+                  className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover/mini:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent opacity-80 group-hover/mini:opacity-95 transition-opacity" />
+                <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] text-white/90 bg-black/65 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 truncate">
+                    {project.images.secondaryLabel}
+                  </span>
+                  <span className="p-1.5 rounded-full bg-black/70 text-white/90 border border-white/15 shrink-0">
+                    <ZoomIn size={12} />
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Left: Production Metrics & Engineering Stack */}
+            <div className="flex-1 rounded-[22px] sm:rounded-[28px] bg-[#12141c] border border-white/10 p-4 sm:p-5 flex flex-col justify-between gap-3">
+              <div className="space-y-3">
+                <p className="font-sans text-xs sm:text-sm text-[#D7E2EA]/80 leading-relaxed line-clamp-2">
+                  {project.tagline}
+                </p>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {project.metrics.map((m) => (
+                    <div
+                      key={m.label}
+                      className="p-2 sm:p-2.5 rounded-xl bg-black/50 border border-white/[0.07]"
+                    >
+                      <div
+                        className="font-mono font-bold text-[11px] sm:text-xs truncate"
+                        style={{ color: project.accentColor }}
+                      >
+                        {m.value}
+                      </div>
+                      <div className="font-mono text-[9px] text-white/45 uppercase tracking-wider truncate mt-0.5">
+                        {m.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-white/[0.07]">
+                {project.stack.map((tech) => (
+                  <span
+                    key={tech}
+                    className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.05] text-white/75 border border-white/[0.06]"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN (60%): Interactive Dark Browser Showcase Stage (Zero text cropping!) */}
+          <div className="w-full lg:w-[60%] rounded-[24px] sm:rounded-[34px] bg-gradient-to-br from-[#141722] via-[#0e1017] to-[#08090d] border border-white/12 p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+            {/* Subtle Radial Studio Lighting behind Browser Mockup */}
+            <div
+              className="absolute inset-0 opacity-25 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle at 50% 45%, ${project.accentColor}44, transparent 70%)`,
+              }}
+            />
+
+            {/* Switcher Pill Bar above screen */}
+            <div className="relative z-10 flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
+              <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-full border border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setActivePreview('primary')}
+                  className={`px-3 py-1 rounded-full font-mono text-[10px] transition-all cursor-pointer ${
+                    activePreview === 'primary'
+                      ? 'bg-white text-black font-semibold'
+                      : 'text-white/65 hover:text-white'
+                  }`}
+                >
+                  Portal View
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivePreview('secondary')}
+                  className={`px-3 py-1 rounded-full font-mono text-[10px] transition-all cursor-pointer ${
+                    activePreview === 'secondary'
+                      ? 'bg-white text-black font-semibold'
+                      : 'text-white/65 hover:text-white'
+                  }`}
+                >
+                  Architecture
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onOpenGallery(project, activePreview === 'primary' ? 0 : 1)}
+                className="px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/10 font-mono text-[10px] text-white/80 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <ZoomIn size={11} />
+                <span>Expand</span>
+              </button>
+            </div>
+
+            {/* Dark macOS Browser Window with Uncropped 16:8.2 Viewport */}
+            <motion.div
+              style={{ y: showcaseY, scale: showcaseScale }}
+              onClick={() => onOpenGallery(project, activePreview === 'primary' ? 0 : 1)}
+              data-cursor-text="INSPECT"
+              className="relative z-10 w-full rounded-2xl overflow-hidden border border-white/15 bg-[#090a0f] shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] cursor-pointer group/screen"
+            >
+              {/* Browser Window Top Chrome */}
+              <div className="flex items-center justify-between px-3.5 py-2 bg-[#161822] border-b border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
+                </div>
+
+                <div className="px-3 py-0.5 rounded-md bg-black/50 border border-white/10 font-mono text-[10px] text-white/60 truncate max-w-[200px] sm:max-w-xs">
+                  https://{project.domainUrl}
+                </div>
+
+                <span className="font-mono text-[9px] text-emerald-400">
+                  LIVE
+                </span>
+              </div>
+
+              {/* Clean Widescreen Render Container */}
+              <div className="relative w-full aspect-[16/8.2] overflow-hidden bg-black">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={displayedScreenshot}
+                    src={displayedScreenshot}
+                    alt={displayedLabel}
+                    initial={{ opacity: 0.4, scale: 1.03 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0.4 }}
+                    transition={{ duration: 0.25 }}
+                    draggable={false}
+                    className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover/screen:scale-[1.03]"
+                  />
+                </AnimatePresence>
+              </div>
+            </motion.div>
+
+            {/* Caption Footer inside Right Column */}
+            <div className="relative z-10 flex items-center justify-between pt-2.5 text-[11px] font-mono text-white/55">
+              <span className="truncate pr-2">{displayedLabel}</span>
+              <span className="shrink-0 text-white/75 flex items-center gap-1">
+                <Layers size={11} style={{ color: project.accentColor }} />
+                Click screen to zoom
+              </span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export const WorksSection: React.FC = () => {
+  const [galleryState, setGalleryState] = useState<{
+    project: ProjectCardData;
+    slide: 0 | 1;
+  } | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const cardsTrackRef = useRef<HTMLDivElement>(null);
+
+  // Scope useScroll cleanly to ONLY the stacking cards track
+  const { scrollYProgress } = useScroll({
+    target: cardsTrackRef,
+    offset: ['start start', 'end end'],
+  });
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from('[data-works-reveal]', {
+        y: 34,
+        opacity: 0,
+        duration: 0.85,
+        stagger: 0.1,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 82%',
+          once: true,
+        },
+      });
+
+      gsap.to('[data-works-title]', {
+        y: -22,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'top 15%',
+          scrub: 0.7,
+        },
+      });
+
+      gsap.from('[data-more-project]', {
+        y: 36,
+        opacity: 0,
+        duration: 0.75,
+        stagger: 0.14,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '[data-more-projects-grid]',
+          start: 'top 86%',
+          once: true,
+        },
+      });
+    }, section);
+
+    return () => ctx.revert();
+  }, []);
+
+  // Keyboard support inside Lightbox (Escape, Left, Right)
+  useEffect(() => {
+    if (!galleryState) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setGalleryState(null);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        setGalleryState((prev) =>
+          prev ? { ...prev, slide: prev.slide === 0 ? 1 : 0 } : null
+        );
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [galleryState]);
+
+  const activeLightboxImage = galleryState
+    ? galleryState.slide === 0
+      ? galleryState.project.images.primary
+      : galleryState.project.images.secondary
+    : '';
+  const activeLightboxCaption = galleryState
+    ? galleryState.slide === 0
+      ? galleryState.project.images.primaryLabel
+      : galleryState.project.images.secondaryLabel
+    : '';
+
+  return (
+    <section
+      ref={sectionRef}
+      id="works"
+      className="relative z-10 w-full bg-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-4 sm:px-8 md:px-10 pt-20 sm:pt-28 md:pt-32 pb-24 sm:pb-32 select-none -mt-10 sm:-mt-12 md:-mt-14"
+    >
+      {/* Section Header */}
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
+        <div>
+          <span data-works-reveal className="font-mono text-xs uppercase tracking-widest text-[#D7E2EA]/55 block mb-2">
+            Selected Work
+          </span>
+
+          <div data-works-title className="will-change-transform">
+            <h2
+              data-works-reveal
+              className="hero-heading font-kanit font-black uppercase leading-none tracking-tight"
+              style={{ fontSize: 'clamp(3rem, 10vw, 130px)' }}
+            >
+              Projects
+            </h2>
+          </div>
+
+          <p
+            data-works-reveal
+            className="text-[#D7E2EA]/70 text-sm sm:text-base mt-2 max-w-xl leading-relaxed font-light"
+          >
+            Deployed multi-agent AI tools, security utilities, and web platforms — plus earlier frontend builds below.
           </p>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          {[
-            { id: 'all', label: 'All Projects' },
-            { id: 'ai', label: 'AI & Agentics' },
-            { id: 'fullstack', label: 'FullStack Platforms' },
-            { id: 'security', label: 'Security & Forensics' },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id as CategoryFilter)}
-              className={`px-4 py-2 rounded-full font-sans text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-                activeCategory === cat.id
-                  ? 'bg-white text-[#000000] shadow-md font-semibold'
-                  : 'bg-[#12131a] hover:bg-[#1a1b24] text-white/70 hover:text-white border border-white/10'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
+        <span
+          data-works-reveal
+          className="font-mono text-xs text-[#D7E2EA]/50 self-start md:self-auto"
+        >
+          01 — 05
+        </span>
       </div>
 
-      {/* 3D Glass Folders Showcase - Open Canvas Flow */}
-      <div className="relative py-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-10 pb-4 border-b border-white/[0.08]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-white">
-              <FolderGit2 size={16} />
-            </div>
-            <div>
-              <span className="font-sans font-semibold text-sm text-white block">
-                Project Files &amp; Live Deployments
-              </span>
-              <span className="font-mono text-[11px] text-white/40">
-                Click any sheet inside the folder to open its live app or repository
-              </span>
-            </div>
-          </div>
+      {/* Sticky Stacking Cards Track */}
+      <div
+        ref={cardsTrackRef}
+        className="relative w-full max-w-6xl mx-auto flex flex-col"
+      >
+        {FLAGSHIP_PROJECTS.map((project, index) => (
+          <StickyProjectCard
+            key={project.id}
+            project={project}
+            index={index}
+            totalCards={FLAGSHIP_PROJECTS.length}
+            progress={scrollYProgress}
+            onOpenGallery={(proj, initialSlide) =>
+              setGalleryState({ project: proj, slide: initialSlide })
+            }
+          />
+        ))}
+      </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                const allOpen = Object.values(openFolders).every(Boolean);
-                setOpenFolders({
-                  'lexis-ai': !allOpen,
-                  'truthshield': !allOpen,
-                  'homie': !allOpen,
-                });
-              }}
-              className="px-3.5 py-1.5 rounded-full font-mono text-xs text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
-            >
-              {Object.values(openFolders).every(Boolean) ? 'Fold All Dossiers' : 'Unseal All Dossiers'}
-            </button>
+      {/* ========================================================
+          ADDITIONAL BUILDS: FRONTEND & UI CONCEPTS (04 – 05)
+         ======================================================== */}
+      <div className="max-w-6xl mx-auto mt-16 sm:mt-20 pt-10 border-t border-white/[0.08]">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#D7E2EA]/50 block mb-1.5">
+              More Builds · Frontend &amp; Hackathon UI
+            </span>
+            <h3 className="font-kanit font-bold text-2xl sm:text-3xl text-[#D7E2EA] tracking-tight">
+              Additional Frontend Projects
+            </h3>
           </div>
+          <span className="font-mono text-[11px] text-[#D7E2EA]/45">
+            Earlier UI &amp; hackathon prototypes · Click previews to zoom
+          </span>
         </div>
 
-        {/* Responsive Folders Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 items-start justify-items-center py-4">
-          {filteredProjects.map((proj, idx) => (
-            <div
-              key={proj.id}
-              className="flex flex-col items-center transition-transform duration-300 hover:scale-[1.01]"
+        <div
+          data-more-projects-grid
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
+          {FRONTEND_PROJECTS.map((project) => (
+            <article
+              key={project.id}
+              data-more-project
+              className="rounded-3xl border border-white/15 bg-[#090a0f] p-4 sm:p-5 flex flex-col justify-between gap-4 hover:border-white/30 transition-colors relative overflow-hidden group"
             >
-              <GlassFolder
-                label={proj.folderLabel}
-                meta={proj.folderMeta}
-                tone={proj.folderTone}
-                art={proj.folderArt}
-                seed={idx * 7 + 3}
-                width={330}
-                action="more"
-                labelPlacement="bottom-left"
-                open={openFolders[proj.id]}
-                onOpenChange={(isOpen) => handleFolderOpenChange(proj.id, isOpen)}
-                appearDelay={idx * 120}
-                files={proj.files}
-                menu={proj.menu}
-                className="cursor-pointer shadow-2xl"
+              {/* Soft radial corner highlight */}
+              <div
+                className="absolute -top-20 -right-20 w-56 h-56 rounded-full opacity-20 pointer-events-none transition-opacity duration-300 group-hover:opacity-35"
+                style={{
+                  background: `radial-gradient(circle at center, ${project.accentColor}, transparent 70%)`,
+                }}
               />
 
-              <div className="mt-4 flex items-center gap-3">
-                <span className="w-2 h-2 rounded-full bg-white/40" />
+              {/* Header */}
+              <div className="relative z-10 flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <span className="font-kanit font-black text-3xl sm:text-4xl leading-none text-white/30 select-none shrink-0">
+                    {project.number}
+                  </span>
+                  <div className="min-w-0">
+                    <span
+                      className="font-mono text-[10px] uppercase tracking-[0.16em] block"
+                      style={{ color: project.accentColor }}
+                    >
+                      {project.category}
+                    </span>
+                    <h4 className="font-kanit font-extrabold text-xl sm:text-2xl uppercase tracking-tight text-white truncate">
+                      {project.name}
+                    </h4>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${project.name} GitHub repository`}
+                    data-cursor-text="CODE"
+                    className="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white text-white/75 hover:text-black border border-white/15 flex items-center justify-center transition-colors"
+                  >
+                    <GithubIcon size={15} />
+                  </a>
+                  <a
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-cursor-text="LIVE"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white hover:bg-[#D7E2EA] text-black font-mono text-[10px] font-bold uppercase tracking-wider transition-colors"
+                  >
+                    <span>Live</span>
+                    <ExternalLink size={11} />
+                  </a>
+                </div>
+              </div>
+
+              <p className="relative z-10 font-sans text-xs sm:text-sm text-[#D7E2EA]/70 leading-relaxed">
+                {project.tagline}
+              </p>
+
+              {/* Dual Real UI Screenshots */}
+              <div className="relative z-10 grid grid-cols-12 gap-2.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    setOpenFolders((prev) => ({
-                      ...prev,
-                      [proj.id]: !prev[proj.id],
-                    }));
-                  }}
-                  className="font-mono text-xs text-white/50 hover:text-white transition-colors cursor-pointer"
+                  onClick={() => setGalleryState({ project, slide: 0 })}
+                  data-cursor-text="ZOOM"
+                  className="col-span-7 rounded-2xl overflow-hidden border border-white/12 bg-black aspect-[16/10] relative cursor-zoom-in group/img"
                 >
-                  {openFolders[proj.id] ? 'Fold dossier ▲' : 'Unseal dossier ▼'}
+                  <img
+                    src={project.images.primary}
+                    alt={project.images.primaryLabel}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-[1.03]"
+                  />
+                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 border border-white/15 font-mono text-[9px] text-white/85 flex items-center gap-1">
+                    <ZoomIn size={9} />
+                    <span>Primary</span>
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setGalleryState({ project, slide: 1 })}
+                  data-cursor-text="ZOOM"
+                  className="col-span-5 rounded-2xl overflow-hidden border border-white/12 bg-black aspect-[16/10] lg:aspect-auto relative cursor-zoom-in group/img2"
+                >
+                  <img
+                    src={project.images.secondary}
+                    alt={project.images.secondaryLabel}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover/img2:scale-[1.03]"
+                  />
+                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 border border-white/15 font-mono text-[9px] text-white/85 flex items-center gap-1">
+                    <ZoomIn size={9} />
+                    <span>View 2</span>
+                  </span>
                 </button>
               </div>
-            </div>
+
+              {/* Footer Metrics & Stack */}
+              <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.08]">
+                <div className="flex flex-wrap gap-1.5">
+                  {project.stack.slice(0, 4).map((tech) => (
+                    <span
+                      key={tech}
+                      className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] font-mono text-[10px] text-[#D7E2EA]/75"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+                <span className="font-mono text-[10px] text-white/40">
+                  {project.domainUrl}
+                </span>
+              </div>
+            </article>
           ))}
         </div>
       </div>
+
+      {/* Interactive Lightbox Gallery Modal */}
+      <AnimatePresence>
+        {galleryState && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setGalleryState(null)}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-8 cursor-zoom-out"
+          >
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-5xl w-full rounded-[32px] sm:rounded-[40px] overflow-hidden border border-white/20 bg-[#0C0C0C] shadow-2xl flex flex-col cursor-default"
+            >
+              {/* Modal Top Bar */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/40">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-white/10 text-white"
+                  >
+                    {galleryState.project.number}
+                  </span>
+                  <span className="font-mono text-xs text-white/80 truncate">
+                    {galleryState.project.name} — {activeLightboxCaption}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => setGalleryState(null)}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white text-white hover:text-black flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                  title="Close Preview (Esc)"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Modal Image Stage */}
+              <div className="relative p-4 sm:p-6 bg-[#07080c] flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setGalleryState((prev) =>
+                      prev ? { ...prev, slide: prev.slide === 0 ? 1 : 0 } : null
+                    )
+                  }
+                  className="absolute left-4 sm:left-6 z-10 w-10 h-10 rounded-full bg-black/75 hover:bg-white text-white hover:text-black border border-white/20 flex items-center justify-center transition-all cursor-pointer"
+                  aria-label="Previous screenshot"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <img
+                  src={activeLightboxImage}
+                  alt={activeLightboxCaption}
+                  className="max-h-[70vh] w-auto max-w-full rounded-2xl border border-white/15 object-contain shadow-2xl"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setGalleryState((prev) =>
+                      prev ? { ...prev, slide: prev.slide === 0 ? 1 : 0 } : null
+                    )
+                  }
+                  className="absolute right-4 sm:right-6 z-10 w-10 h-10 rounded-full bg-black/75 hover:bg-white text-white hover:text-black border border-white/20 flex items-center justify-center transition-all cursor-pointer"
+                  aria-label="Next screenshot"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-3.5 border-t border-white/10 bg-black/40 text-xs font-mono text-white/60">
+                <span>Press ← / → to switch views · Esc to close</span>
+                <a
+                  href={galleryState.project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-1.5 rounded-full bg-white text-black font-semibold flex items-center gap-1.5 hover:bg-white/90 transition-colors"
+                >
+                  Open Live Site <ExternalLink size={12} />
+                </a>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
+
+export default WorksSection;

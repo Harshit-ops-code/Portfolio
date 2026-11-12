@@ -66,18 +66,17 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
         <BoxLoader size={38} />
       </div>
 
-      {/* Numerical Progress Indicator & System State */}
-      <div className="flex flex-col items-center gap-2 mt-4">
-        <div className="flex items-center gap-2 font-mono text-sm tracking-wider text-white">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>{paddedProgress}%</span>
-        </div>
+      {/* Numerical Progress Indicator */}
+      <div className="flex flex-col items-center gap-1.5 mt-4">
+        <span className="font-mono text-sm tracking-wider text-white">
+          {paddedProgress}%
+        </span>
 
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
-          Initializing Systems Core
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/45">
+          Harshit Kumar
         </p>
 
-        <span className="font-mono text-[10px] text-white/20 mt-1">
+        <span className="font-mono text-[10px] text-white/25 mt-1">
           Click anywhere to skip
         </span>
       </div>

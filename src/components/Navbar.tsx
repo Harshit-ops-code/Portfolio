@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Home, Briefcase, Cpu, User, Sparkles, ArrowUpRight } from 'lucide-react';
+import { Home, Briefcase, Cpu, User, ArrowUpRight } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from './Icons';
+import { smoothScrollTo } from '@/lib/gsapSetup';
 
 interface NavbarProps {
   activeSection: string;
@@ -10,8 +11,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
   const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    smoothScrollTo(id);
   };
 
   return (
@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
           {/* External Navigation: GitHub */}
           <div className="relative">
             <a
-              href="https://github.com/HARSHITKUMAR987"
+              href="https://github.com/Harshit-ops-code"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Visit Harshit's GitHub"
@@ -99,13 +99,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
             {activeTooltip === 'github' && (
               <div className="hidden sm:flex absolute top-full mt-3 left-1/2 -translate-x-1/2 p-2.5 rounded-2xl bg-[#0b0c10]/95 border border-white/20 shadow-2xl backdrop-blur-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 duration-150 flex-col gap-0.5 text-left pointer-events-none">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="font-mono text-xs font-semibold text-white tracking-tight">GitHub</span>
-                  <span className="font-mono text-[10px] text-white/40">/HARSHITKUMAR987</span>
+                  <span className="font-mono text-[10px] text-white/40">/Harshit-ops-code</span>
                   <ArrowUpRight size={11} className="text-white/50 ml-auto" />
                 </div>
-                <span className="font-sans text-[11px] text-white/60 pl-3.5">
-                  300+ C++ DSA Solved · LangGraph &amp; GenAI Repos
+                <span className="font-sans text-[11px] text-white/60">
+                  C++ DSA &amp; full-stack AI repositories
                 </span>
               </div>
             )}
@@ -114,7 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
           {/* External Navigation: LinkedIn */}
           <div className="relative">
             <a
-              href="https://linkedin.com/in/harshit-kumar-942691285"
+              href="https://www.linkedin.com/in/harshit-kumar-ai"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Connect with Harshit on LinkedIn"
@@ -132,13 +131,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
             {activeTooltip === 'linkedin' && (
               <div className="hidden sm:flex absolute top-full mt-3 left-1/2 -translate-x-1/2 p-2.5 rounded-2xl bg-[#0b0c10]/95 border border-sky-500/30 shadow-2xl backdrop-blur-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 duration-150 flex-col gap-0.5 text-left pointer-events-none">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8] animate-ping" />
                   <span className="font-mono text-xs font-semibold text-sky-400 tracking-tight">LinkedIn</span>
-                  <span className="font-mono text-[10px] text-white/40">/in/harshit-kumar</span>
+                  <span className="font-mono text-[10px] text-white/40">/in/harshit-kumar-ai</span>
                   <ArrowUpRight size={11} className="text-sky-400 ml-auto" />
                 </div>
-                <span className="font-sans text-[11px] text-white/60 pl-3.5">
-                  IIIT Kota CSE · Connect &amp; Professional Network
+                <span className="font-sans text-[11px] text-white/60">
+                  IIIT Kota CSE — Connect with me
                 </span>
               </div>
             )}
@@ -152,11 +150,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
             e.preventDefault();
             scrollTo('contact');
           }}
-          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white hover:bg-white/90 text-[#000000] font-sans font-semibold text-xs sm:text-sm transition-all shadow-lg shadow-white/10 active:scale-95 cursor-pointer whitespace-nowrap"
+          className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white hover:bg-white/90 text-[#000000] font-sans font-semibold text-xs sm:text-sm transition-all shadow-lg shadow-white/10 active:scale-95 cursor-pointer whitespace-nowrap"
         >
-          <Sparkles size={13} className="text-black sm:w-3.5 sm:h-3.5" />
-          <span className="hidden min-[380px]:inline">Get in Touch</span>
-          <span className="min-[380px]:hidden">Touch</span>
+          <span className="hidden min-[380px]:inline">Contact</span>
+          <span className="min-[380px]:hidden">Hire</span>
+          <ArrowUpRight size={14} className="text-black" />
         </a>
       </div>
     </nav>

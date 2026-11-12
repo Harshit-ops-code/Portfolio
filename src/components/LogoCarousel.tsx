@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { gsap, ScrollTrigger, smoothScrollTo } from '@/lib/gsapSetup';
 
 interface LogoItem {
   id: string;
@@ -8,6 +9,10 @@ interface LogoItem {
 }
 
 export const LogoCarousel: React.FC = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const loopTweenRef = useRef<gsap.core.Tween | null>(null);
+  const isHoveredRef = useRef(false);
   const logos: LogoItem[] = [
     {
       id: 'langgraph',
@@ -100,43 +105,147 @@ export const LogoCarousel: React.FC = () => {
     },
   ];
 
+  useEffect(() => {
+    const section = sectionRef.current;
+    const track = trackRef.current;
+    if (!section || !track) return;
+
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia();
+
+      gsap.from('[data-logo-header]', {
+        y: 22,
+        opacity: 0,
+        duration: 0.7,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 88%',
+          once: true,
+        },
+      });
+
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        const tween = gsap.to(track, {
+          xPercent: -33.333333,
+          duration: 24,
+          ease: 'none',
+          repeat: -1,
+        });
+        loopTweenRef.current = tween;
+
+        let settleTimer: number | null = null;
+
+        ScrollTrigger.create({
+          trigger: section,
+          start: 'top bottom',
+          end: 'bottom top',
+          onUpdate: (self) => {
+            const vel = self.getVelocity();
+            const boost = Math.max(-2.8, Math.min(3.8, vel / 450));
+            const base = isHoveredRef.current ? 0.25 : 1;
+            const targetScale = base + boost;
+
+            gsap.to(tween, {
+              timeScale: Math.abs(targetScale) < 0.25 ? base : targetScale,
+              duration: 0.2,
+              overwrite: 'auto',
+            });
+
+            if (settleTimer) window.clearTimeout(settleTimer);
+            settleTimer = window.setTimeout(() => {
+              gsap.to(tween, {
+                timeScale: isHoveredRef.current ? 0.25 : 1,
+                duration: 0.8,
+                ease: 'power3.out',
+                overwrite: 'auto',
+              });
+            }, 140);
+          },
+        });
+
+        return () => {
+          if (settleTimer) window.clearTimeout(settleTimer);
+        };
+      });
+    }, section);
+
+    return () => {
+      loopTweenRef.current = null;
+      ctx.revert();
+    };
+  }, []);
+
+  const handleTrackHover = (hovered: boolean) => {
+    isHoveredRef.current = hovered;
+    if (loopTweenRef.current) {
+      gsap.to(loopTweenRef.current, {
+        timeScale: hovered ? 0.22 : 1,
+        duration: 0.45,
+        ease: 'power2.out',
+        overwrite: 'auto',
+      });
+    }
+  };
+
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto z-10 border-t border-b border-white/[0.06]">
+    <section
+      ref={sectionRef}
+      className="py-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto z-10 border-t border-b border-white/[0.06]"
+    >
       {/* Subtle Stream Header */}
-      <div className="mb-8 text-center sm:text-left flex items-center justify-between">
+      <div
+        data-logo-header
+        className="mb-8 text-center sm:text-left flex items-center justify-between"
+      >
         <p className="font-mono text-xs uppercase tracking-widest text-white/40">
           Core Technologies &amp; Production Stack
         </p>
         <span className="font-mono text-[11px] text-emerald-400/80 hidden sm:inline-block">
-          Active Engineering Foundations
+          Velocity-Synced · Live Architecture Reel
         </span>
       </div>
 
-      {/* Seamless Horizontal Stream without enclosing box */}
-      <div className="relative overflow-hidden py-2">
+      {/* Seamless Infinite Marquee Stream */}
+      <div
+        className="relative overflow-hidden py-3"
+        onMouseEnter={() => handleTrackHover(true)}
+        onMouseLeave={() => handleTrackHover(false)}
+      >
         {/* Edge Blur Gradients */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#000000] to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#000000] to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-[#000000] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-[#000000] to-transparent z-10 pointer-events-none" />
 
-        {/* Horizontal Disc Reel */}
-        <div className="flex items-center justify-between gap-4 sm:gap-6 overflow-x-auto no-scrollbar py-2">
-          {logos.map((logo) => (
+        {/* Tripled Flex Strip for Seamless -33.333% Wrap */}
+        <div ref={trackRef} className="flex w-max will-change-transform">
+          {[0, 1, 2].map((copyIdx) => (
             <div
-              key={logo.id}
-              className="group flex-shrink-0 flex flex-col items-center justify-center cursor-pointer transition-transform duration-300"
+              key={copyIdx}
+              aria-hidden={copyIdx > 0}
+              className="flex items-center gap-6 sm:gap-10 pr-6 sm:pr-10 shrink-0"
             >
-              {/* Circular Disc */}
-              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/25 flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-105 active:scale-95">
-                {logo.svg}
-              </div>
+              {logos.map((logo) => (
+                <button
+                  type="button"
+                  key={`${copyIdx}-${logo.id}`}
+                  onClick={() => smoothScrollTo('stack', 40)}
+                  data-cursor-text="STACK ↓"
+                  className="group flex-shrink-0 flex flex-col items-center justify-center cursor-pointer transition-transform duration-300"
+                >
+                  {/* Circular Disc */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/30 flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-105 active:scale-95">
+                    {logo.svg}
+                  </div>
 
-              {/* Title & Tag underneath */}
-              <span className="font-sans text-xs font-medium text-white/80 group-hover:text-white mt-2.5 transition-colors">
-                {logo.name}
-              </span>
-              <span className="font-mono text-[10px] text-white/40 group-hover:text-white/60">
-                {logo.category}
-              </span>
+                  {/* Title & Tag underneath */}
+                  <span className="font-sans text-xs font-medium text-white/80 group-hover:text-white mt-2.5 transition-colors">
+                    {logo.name}
+                  </span>
+                  <span className="font-mono text-[10px] text-white/40 group-hover:text-white/60">
+                    {logo.category}
+                  </span>
+                </button>
+              ))}
             </div>
           ))}
         </div>

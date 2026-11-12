@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Copy, Check, Phone } from 'lucide-react';
+import { Copy, Check, Phone, Download } from 'lucide-react';
 import HalftoneWordmarkFooter, { type FooterColumn } from '@/components/ui/halftone-wordmark-footer';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import { gsap } from '@/lib/gsapSetup';
@@ -30,6 +30,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "GitHub", href: "https://github.com/Harshit-ops-code" },
       { label: "LinkedIn", href: "https://www.linkedin.com/in/harshit-kumar-ai" },
       { label: "LeetCode (300+)", href: "https://leetcode.com/u/Harshitkumar_987/" },
+      { label: "Resume (PDF)", href: "/Harshit_Kumar_Resume.pdf" },
       { label: "Email Me", href: "mailto:harshitkk5830@gmail.com" },
     ],
   },
@@ -125,6 +126,16 @@ export const Footer: React.FC = () => {
               >
                 <Phone size={15} />
                 <span>{phone}</span>
+              </a>
+
+              <a
+                href="/Harshit_Kumar_Resume.pdf"
+                download="Harshit_Kumar_Resume.pdf"
+                data-cursor-text="RESUME PDF"
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.14] text-white/90 font-sans text-xs sm:text-sm font-medium transition-all border border-white/15 cursor-pointer w-full sm:w-auto md:w-full"
+              >
+                <Download size={15} />
+                <span>Download Resume</span>
               </a>
             </div>
           </div>

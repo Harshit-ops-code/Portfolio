@@ -14,11 +14,12 @@ import {
   Code2,
   Calendar,
   Gamepad2,
+  Download,
 } from 'lucide-react';
 import { LeetCodeIcon, GithubIcon, LinkedinIcon } from './Icons';
 import { gsap } from '@/lib/gsapSetup';
 
-import harshitPortrait from '../assets/harshit-portrait.png';
+import harshitPortrait from '../assets/harshit-portrait.webp';
 import iiitKotaLogo from '../assets/iiit-kota-logo.png';
 
 type ExperienceTrack = 'all' | 'leadership' | 'engineering';
@@ -396,15 +397,25 @@ export const AboutSection: React.FC = () => {
 
             <div className="mt-6 pt-5 border-t border-white/[0.08] flex flex-wrap items-center gap-2.5">
               <a
+                href="/Harshit_Kumar_Resume.pdf"
+                download="Harshit_Kumar_Resume.pdf"
+                data-cursor-text="RESUME PDF"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black hover:bg-[#D7E2EA] font-mono text-xs font-semibold transition-colors"
+              >
+                <Download size={14} />
+                <span>Download Resume</span>
+              </a>
+
+              <a
                 href="https://github.com/Harshit-ops-code"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-cursor-text="GITHUB"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black hover:bg-[#D7E2EA] font-mono text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/15 text-white border border-white/12 font-mono text-xs transition-colors"
               >
                 <GithubIcon size={14} />
                 <span>GitHub</span>
-                <ArrowUpRight size={12} />
+                <ArrowUpRight size={12} className="text-white/50" />
               </a>
 
               <a

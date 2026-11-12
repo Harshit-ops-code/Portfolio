@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Spotlight } from '@/components/ui/spotlight';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
@@ -440,6 +440,16 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
             className="w-10 h-10 rounded-full bg-[#06080f]/85 hover:bg-sky-500/20 border border-white/15 hover:border-sky-400/40 flex items-center justify-center text-white/80 hover:text-sky-300 transition-all active:scale-95"
           >
             <LinkedinIcon size={16} />
+          </a>
+
+          <a
+            href="/Harshit_Kumar_Resume.pdf"
+            download="Harshit_Kumar_Resume.pdf"
+            data-cursor-text="RESUME PDF"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#06080f]/85 hover:bg-white/15 border border-white/15 hover:border-white/35 text-white/90 hover:text-white text-xs sm:text-sm font-sans font-medium transition-all active:scale-95"
+          >
+            <Download size={14} />
+            <span>Resume</span>
           </a>
 
           <button

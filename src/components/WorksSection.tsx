@@ -507,6 +507,8 @@ const StickyProjectCard: React.FC<StickyCardProps> = ({
                     exit={{ opacity: 0.4 }}
                     transition={{ duration: 0.25 }}
                     draggable={false}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover/screen:scale-[1.03]"
                   />
                 </AnimatePresence>
@@ -767,6 +769,8 @@ export const WorksSection: React.FC = () => {
                   <img
                     src={project.images.primary}
                     alt={project.images.primaryLabel}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-[1.03]"
                   />
                   <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 border border-white/15 font-mono text-[9px] text-white/85 flex items-center gap-1">
@@ -784,6 +788,8 @@ export const WorksSection: React.FC = () => {
                   <img
                     src={project.images.secondary}
                     alt={project.images.secondaryLabel}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover/img2:scale-[1.03]"
                   />
                   <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 border border-white/15 font-mono text-[9px] text-white/85 flex items-center gap-1">

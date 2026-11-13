@@ -3,6 +3,11 @@ import { Copy, Check, Phone, Download } from 'lucide-react';
 import HalftoneWordmarkFooter, { type FooterColumn } from '@/components/ui/halftone-wordmark-footer';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import { gsap } from '@/lib/gsapSetup';
+import { playChime } from '@/utils/sound';
+
+interface FooterProps {
+  onShowToast?: (message: string) => void;
+}
 
 const FOOTER_COLUMNS: FooterColumn[] = [
   {
@@ -39,7 +44,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
 const FOOTER_GRADIENT_CONFIG = { preset: 'Aurora' as const, speed: 8 };
 const FOOTER_NOISE_CONFIG = { opacity: 0.12 };
 
-export const Footer: React.FC = () => {
+export const Footer: React.FC<FooterProps> = ({ onShowToast }) => {
   const [copied, setCopied] = useState(false);
   const footerRef = useRef<HTMLElement>(null);
 
@@ -48,7 +53,9 @@ export const Footer: React.FC = () => {
 
   const copyEmail = () => {
     navigator.clipboard?.writeText(email);
+    playChime();
     setCopied(true);
+    onShowToast?.('Email copied to clipboard! 📋');
     setTimeout(() => setCopied(false), 2000);
   };
 

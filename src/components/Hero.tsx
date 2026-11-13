@@ -6,6 +6,7 @@ import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import { SplineScene } from '@/components/ui/splite';
 import { GithubIcon, LinkedinIcon } from './Icons';
 import { gsap, smoothScrollTo } from '@/lib/gsapSetup';
+import { playPop, playTick } from '@/utils/sound';
 
 const HERO_GRADIENT_CONFIG = {
   preset: 'custom' as const,
@@ -400,8 +401,12 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
         {/* Bottom-Center: Interactive Scroll Prompt */}
         <button
           type="button"
-          onClick={() => scrollTo('works')}
-          aria-label="Scroll to featured projects"
+          onClick={() => {
+            playPop();
+            scrollTo('about');
+          }}
+          onMouseEnter={() => playTick()}
+          aria-label="Scroll to about section"
           className="hidden lg:inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#06080f]/85 hover:bg-white/15 border border-white/12 font-mono text-[10px] uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors cursor-pointer pointer-events-auto"
         >
           <span>Scroll</span>
@@ -426,6 +431,8 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
             rel="noopener noreferrer"
             aria-label="GitHub Profile"
             data-cursor-text="GITHUB"
+            onClick={() => playPop()}
+            onMouseEnter={() => playTick()}
             className="w-10 h-10 rounded-full bg-[#06080f]/85 hover:bg-white/15 border border-white/15 hover:border-white/35 flex items-center justify-center text-white/80 hover:text-white transition-all active:scale-95"
           >
             <GithubIcon size={16} />
@@ -437,6 +444,8 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
             rel="noopener noreferrer"
             aria-label="LinkedIn Profile"
             data-cursor-text="LINKEDIN"
+            onClick={() => playPop()}
+            onMouseEnter={() => playTick()}
             className="w-10 h-10 rounded-full bg-[#06080f]/85 hover:bg-sky-500/20 border border-white/15 hover:border-sky-400/40 flex items-center justify-center text-white/80 hover:text-sky-300 transition-all active:scale-95"
           >
             <LinkedinIcon size={16} />
@@ -446,6 +455,8 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
             href="/Harshit_Kumar_Resume.pdf"
             download="Harshit_Kumar_Resume.pdf"
             data-cursor-text="RESUME PDF"
+            onClick={() => playPop()}
+            onMouseEnter={() => playTick()}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#06080f]/85 hover:bg-white/15 border border-white/15 hover:border-white/35 text-white/90 hover:text-white text-xs sm:text-sm font-sans font-medium transition-all active:scale-95"
           >
             <Download size={14} />
@@ -454,7 +465,11 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
 
           <button
             type="button"
-            onClick={() => scrollTo('works')}
+            onClick={() => {
+              playPop();
+              scrollTo('works');
+            }}
+            onMouseEnter={() => playTick()}
             data-cursor-text="EXPLORE ↓"
             className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-[#D7E2EA] text-black text-xs sm:text-sm font-sans font-semibold transition-all shadow-[0_10px_30px_rgba(255,255,255,0.18)] active:scale-95 cursor-pointer"
           >

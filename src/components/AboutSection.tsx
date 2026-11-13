@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { LeetCodeIcon, GithubIcon, LinkedinIcon } from './Icons';
 import { gsap } from '@/lib/gsapSetup';
+import { playPop } from '@/utils/sound';
 
 import harshitPortrait from '../assets/harshit-portrait.webp';
 import iiitKotaLogo from '../assets/iiit-kota-logo.png';
@@ -512,7 +513,10 @@ export const AboutSection: React.FC = () => {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTrack(tab.id)}
+                  onClick={() => {
+                    playPop();
+                    setActiveTrack(tab.id);
+                  }}
                   className={`relative px-3.5 sm:px-4 py-1.5 rounded-full font-mono text-[11px] transition-colors cursor-pointer ${
                     active ? 'text-black font-semibold' : 'text-white/60 hover:text-white'
                   }`}

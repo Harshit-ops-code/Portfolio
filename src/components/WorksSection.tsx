@@ -20,6 +20,7 @@ import { LiveProjectButton } from './ui/LiveProjectButton';
 import { Magnet } from './ui/Magnet';
 import { GithubIcon } from './Icons';
 import { gsap } from '../lib/gsapSetup';
+import { playPop, playSwitch } from '@/utils/sound';
 
 import truthshieldImg from '../assets/truthshield.png';
 import truthshieldThreatsImg from '../assets/truthshield-threats.png';
@@ -130,13 +131,10 @@ const FLAGSHIP_PROJECTS: ProjectCardData[] = [
     githubUrl: 'https://github.com/Harshit-ops-code',
     accentColor: '#34d399',
   },
-];
-
-const FRONTEND_PROJECTS: ProjectCardData[] = [
   {
     id: 'prahari',
     number: '04',
-    category: 'SIH 2026 Concept · Frontend UI',
+    category: 'Cybersecurity · SIH 2026 Interception',
     name: 'P.R.A.H.A.R.I.',
     tagline:
       'Predictive ATM Cashout Interception Interface with Spatial Radar & Live Leaflet Node Mapper UI',
@@ -146,7 +144,7 @@ const FRONTEND_PROJECTS: ProjectCardData[] = [
       { label: 'Mapping', value: 'Leaflet Live' },
       { label: 'Module', value: 'NCRP Matrix' },
     ],
-    stack: ['React', 'TypeScript', 'Leaflet Maps', 'Tailwind CSS', 'Frontend UI'],
+    stack: ['React', 'TypeScript', 'Leaflet Maps', 'Tailwind CSS', 'FastAPI'],
     images: {
       primary: prahariImg,
       primaryLabel: 'Overview · Predictive ATM Interception Hero',
@@ -160,7 +158,7 @@ const FRONTEND_PROJECTS: ProjectCardData[] = [
   {
     id: 'govolt',
     number: '05',
-    category: 'CleanTech Concept · Frontend UI',
+    category: 'CleanTech · Circular EV Battery Swap',
     name: 'GoVolt Network',
     tagline:
       '100% Circular EV Battery Swap Interface featuring Station Telemetry Card & Zero-Waste Ring',
@@ -168,9 +166,9 @@ const FRONTEND_PROJECTS: ProjectCardData[] = [
     metrics: [
       { label: 'Station', value: '4.2 kW UI' },
       { label: 'Lifecycle', value: '0% Landfill' },
-      { label: 'Focus', value: 'Frontend UI' },
+      { label: 'Focus', value: 'Full-Stack UI' },
     ],
-    stack: ['React', 'Tailwind CSS', 'Motion', 'UI Concept', 'Vercel'],
+    stack: ['React', 'Tailwind CSS', 'Framer Motion', 'TypeScript', 'Vercel'],
     images: {
       primary: govoltImg,
       primaryLabel: 'Circular Battery Network · Station Active Card',
@@ -439,7 +437,10 @@ const StickyProjectCard: React.FC<StickyCardProps> = ({
               <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-full border border-white/10">
                 <button
                   type="button"
-                  onClick={() => setActivePreview('primary')}
+                  onClick={() => {
+                    playSwitch();
+                    setActivePreview('primary');
+                  }}
                   className={`px-3 py-1 rounded-full font-mono text-[10px] transition-all cursor-pointer ${
                     activePreview === 'primary'
                       ? 'bg-white text-black font-semibold'
@@ -450,7 +451,10 @@ const StickyProjectCard: React.FC<StickyCardProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActivePreview('secondary')}
+                  onClick={() => {
+                    playSwitch();
+                    setActivePreview('secondary');
+                  }}
                   className={`px-3 py-1 rounded-full font-mono text-[10px] transition-all cursor-pointer ${
                     activePreview === 'secondary'
                       ? 'bg-white text-black font-semibold'
@@ -463,7 +467,10 @@ const StickyProjectCard: React.FC<StickyCardProps> = ({
 
               <button
                 type="button"
-                onClick={() => onOpenGallery(project, activePreview === 'primary' ? 0 : 1)}
+                onClick={() => {
+                  playPop();
+                  onOpenGallery(project, activePreview === 'primary' ? 0 : 1);
+                }}
                 className="px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/10 font-mono text-[10px] text-white/80 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <ZoomIn size={11} />
@@ -572,19 +579,6 @@ export const WorksSection: React.FC = () => {
           scrub: 0.7,
         },
       });
-
-      gsap.from('[data-more-project]', {
-        y: 36,
-        opacity: 0,
-        duration: 0.75,
-        stagger: 0.14,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '[data-more-projects-grid]',
-          start: 'top 86%',
-          once: true,
-        },
-      });
     }, section);
 
     return () => ctx.revert();
@@ -644,7 +638,7 @@ export const WorksSection: React.FC = () => {
             data-works-reveal
             className="text-[#D7E2EA]/70 text-sm sm:text-base mt-2 max-w-xl leading-relaxed font-light"
           >
-            Deployed multi-agent AI tools, security utilities, and web platforms — plus earlier frontend builds below.
+            Deployed multi-agent AI tools, security utilities, and full-stack web platforms.
           </p>
         </div>
 
@@ -673,151 +667,6 @@ export const WorksSection: React.FC = () => {
             }
           />
         ))}
-      </div>
-
-      {/* ========================================================
-          ADDITIONAL BUILDS: FRONTEND & UI CONCEPTS (04 – 05)
-         ======================================================== */}
-      <div className="max-w-6xl mx-auto mt-16 sm:mt-20 pt-10 border-t border-white/[0.08]">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#D7E2EA]/50 block mb-1.5">
-              More Builds · Frontend &amp; Hackathon UI
-            </span>
-            <h3 className="font-kanit font-bold text-2xl sm:text-3xl text-[#D7E2EA] tracking-tight">
-              Additional Frontend Projects
-            </h3>
-          </div>
-          <span className="font-mono text-[11px] text-[#D7E2EA]/45">
-            Earlier UI &amp; hackathon prototypes · Click previews to zoom
-          </span>
-        </div>
-
-        <div
-          data-more-projects-grid
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-        >
-          {FRONTEND_PROJECTS.map((project) => (
-            <article
-              key={project.id}
-              data-more-project
-              className="rounded-3xl border border-white/15 bg-[#090a0f] p-4 sm:p-5 flex flex-col justify-between gap-4 hover:border-white/30 transition-colors relative overflow-hidden group"
-            >
-              {/* Soft radial corner highlight */}
-              <div
-                className="absolute -top-20 -right-20 w-56 h-56 rounded-full opacity-20 pointer-events-none transition-opacity duration-300 group-hover:opacity-35"
-                style={{
-                  background: `radial-gradient(circle at center, ${project.accentColor}, transparent 70%)`,
-                }}
-              />
-
-              {/* Header */}
-              <div className="relative z-10 flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <span className="font-kanit font-black text-3xl sm:text-4xl leading-none text-white/30 select-none shrink-0">
-                    {project.number}
-                  </span>
-                  <div className="min-w-0">
-                    <span
-                      className="font-mono text-[10px] uppercase tracking-[0.16em] block"
-                      style={{ color: project.accentColor }}
-                    >
-                      {project.category}
-                    </span>
-                    <h4 className="font-kanit font-extrabold text-xl sm:text-2xl uppercase tracking-tight text-white truncate">
-                      {project.name}
-                    </h4>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${project.name} GitHub repository`}
-                    data-cursor-text="CODE"
-                    className="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white text-white/75 hover:text-black border border-white/15 flex items-center justify-center transition-colors"
-                  >
-                    <GithubIcon size={15} />
-                  </a>
-                  <a
-                    href={project.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-cursor-text="LIVE"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white hover:bg-[#D7E2EA] text-black font-mono text-[10px] font-bold uppercase tracking-wider transition-colors"
-                  >
-                    <span>Live</span>
-                    <ExternalLink size={11} />
-                  </a>
-                </div>
-              </div>
-
-              <p className="relative z-10 font-sans text-xs sm:text-sm text-[#D7E2EA]/70 leading-relaxed">
-                {project.tagline}
-              </p>
-
-              {/* Dual Real UI Screenshots */}
-              <div className="relative z-10 grid grid-cols-12 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setGalleryState({ project, slide: 0 })}
-                  data-cursor-text="ZOOM"
-                  className="col-span-7 rounded-2xl overflow-hidden border border-white/12 bg-black aspect-[16/10] relative cursor-zoom-in group/img"
-                >
-                  <img
-                    src={project.images.primary}
-                    alt={project.images.primaryLabel}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-[1.03]"
-                  />
-                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 border border-white/15 font-mono text-[9px] text-white/85 flex items-center gap-1">
-                    <ZoomIn size={9} />
-                    <span>Primary</span>
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setGalleryState({ project, slide: 1 })}
-                  data-cursor-text="ZOOM"
-                  className="col-span-5 rounded-2xl overflow-hidden border border-white/12 bg-black aspect-[16/10] lg:aspect-auto relative cursor-zoom-in group/img2"
-                >
-                  <img
-                    src={project.images.secondary}
-                    alt={project.images.secondaryLabel}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover/img2:scale-[1.03]"
-                  />
-                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 border border-white/15 font-mono text-[9px] text-white/85 flex items-center gap-1">
-                    <ZoomIn size={9} />
-                    <span>View 2</span>
-                  </span>
-                </button>
-              </div>
-
-              {/* Footer Metrics & Stack */}
-              <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.08]">
-                <div className="flex flex-wrap gap-1.5">
-                  {project.stack.slice(0, 4).map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] font-mono text-[10px] text-[#D7E2EA]/75"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-                <span className="font-mono text-[10px] text-white/40">
-                  {project.domainUrl}
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
       </div>
 
       {/* Interactive Lightbox Gallery Modal */}

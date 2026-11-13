@@ -9,6 +9,7 @@ import { AboutSection } from './components/AboutSection';
 import { Footer } from './components/Footer';
 import { LoadingScreen } from './components/LoadingScreen';
 import { CustomCursor } from './components/ui/CustomCursor';
+import { Toast } from './components/ui/Toast';
 import {
   initSmoothWheelScroll,
   ScrollTrigger,
@@ -18,6 +19,14 @@ import {
 export const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState('hero');
   const [isLoading, setIsLoading] = useState(true);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    window.setTimeout(() => {
+      setToastMessage((cur) => (cur === message ? null : cur));
+    }, 2400);
+  };
 
   // Minimalist scroll progress bar
   const { scrollYProgress } = useScroll();
@@ -62,7 +71,7 @@ export const App: React.FC = () => {
 
   // Track active scroll section without layout-thrashing scroll reads
   useEffect(() => {
-    const sections = ['hero', 'works', 'stack', 'about', 'contact'];
+    const sections = ['hero', 'about', 'works', 'stack', 'contact'];
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -112,18 +121,21 @@ export const App: React.FC = () => {
         {/* 2. Curved Tech & Ecosystem Reel */}
         <LogoCarousel />
 
-        {/* 3. Featured Works: Interactive Production Deck */}
+        {/* 3. About Me: Editorial Profile & Academic Milestones */}
+        <AboutSection />
+
+        {/* 4. Featured Works: Interactive Production Deck */}
         <WorksSection />
 
-        {/* 4. My Stack: 3D Keycap Orb & Tech Matrix */}
+        {/* 5. My Stack: 3D Keycap Orb & Tech Matrix */}
         <TechStack />
-
-        {/* 5. About Me: Editorial Profile & Academic Milestones */}
-        <AboutSection />
       </main>
 
       {/* 6. Footer with Grand CTA & Halftone Wordmark */}
-      <Footer />
+      <Footer onShowToast={showToast} />
+
+      {/* 7. Floating Action Toast Notification */}
+      <Toast message={toastMessage} />
     </div>
   );
 };

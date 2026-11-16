@@ -437,7 +437,7 @@ export const Footer: React.FC<FooterProps> = ({ onShowToast }) => {
         {/* Left Carrara Marble Sculpture Hand (Creation of Adam) */}
         <div
           ref={handLeftRef}
-          className="absolute left-0 top-[2%] sm:top-[5%] w-[46%] max-w-[580px] min-w-[250px] pointer-events-none z-10 will-change-transform"
+          className="absolute left-0 top-[2%] sm:top-[5%] w-[40%] sm:w-[46%] max-w-[580px] min-w-[130px] sm:min-w-[250px] pointer-events-none z-10 will-change-transform"
           style={{
             filter: 'drop-shadow(0 0 35px rgba(240, 162, 76, 0.25))',
           }}
@@ -453,7 +453,7 @@ export const Footer: React.FC<FooterProps> = ({ onShowToast }) => {
         {/* Right Carrara Marble Sculpture Hand (Creation of Adam) */}
         <div
           ref={handRightRef}
-          className="absolute right-0 top-[7%] sm:top-[11%] w-[44%] max-w-[550px] min-w-[240px] pointer-events-none z-10 will-change-transform"
+          className="absolute right-0 top-[7%] sm:top-[11%] w-[38%] sm:w-[44%] max-w-[550px] min-w-[120px] sm:min-w-[240px] pointer-events-none z-10 will-change-transform"
           style={{
             filter: 'drop-shadow(0 0 35px rgba(240, 162, 76, 0.25))',
           }}

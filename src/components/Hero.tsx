@@ -145,7 +145,7 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
     <section
       ref={heroRef}
       id="hero"
-      className="relative w-full h-[100svh] min-h-[660px] max-h-[1080px] flex flex-col justify-between overflow-hidden bg-[#020307] z-10 select-none"
+      className="relative w-full h-[100svh] min-h-[580px] sm:min-h-[660px] max-h-[1080px] flex flex-col justify-between overflow-hidden bg-[#020307] z-10 select-none"
     >
       {/* =====================================================================
           LAYER 0: Atmospheric Fluid Shader + Architectural HUD Grid + Orbital Rings
@@ -214,15 +214,15 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
       />
 
       {/* =====================================================================
-          LAYER 1 (z-10): HANDWRITTEN "Hi, I'm" + SEQUENTIAL "HARSHIT" BEHIND ROBOT
+          LAYER 1 (z-25 on mobile, z-10 on desktop): HANDWRITTEN "Hi, I'm" + "HARSHIT"
          ===================================================================== */}
       <div
         data-hero-name
-        className="absolute inset-x-0 top-[37%] sm:top-[38%] -translate-y-1/2 z-10 pointer-events-none flex flex-col items-center justify-center px-2 sm:px-6 will-change-transform"
+        className="absolute inset-x-0 top-[26%] sm:top-[38%] -translate-y-1/2 z-25 sm:z-10 pointer-events-none flex flex-col items-center justify-center px-2 sm:px-6 will-change-transform"
       >
         <div className="w-full max-w-[1520px] flex flex-col items-center">
           {/* Handwritten "Hi, I'm" tucked clearly to upper-left of the robot head */}
-          <div className="w-full max-w-[1320px] flex justify-start pl-[6vw] sm:pl-[9vw] xl:pl-[130px] -mb-2 sm:-mb-5 md:-mb-7">
+          <div className="w-full max-w-[1320px] flex justify-start pl-[4vw] sm:pl-[9vw] xl:pl-[130px] -mb-1.5 sm:-mb-5 md:-mb-7">
             <div className="relative inline-block -rotate-2">
               <motion.span
                 initial={{ clipPath: 'inset(0% 100% 0% 0%)', opacity: 0.4 }}
@@ -234,7 +234,7 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
                 transition={{ duration: 0.75, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
                 className="font-handwriting font-bold tracking-[0.02em] block leading-none text-transparent bg-clip-text pr-2"
                 style={{
-                  fontSize: 'clamp(2.25rem, 5.4vw, 76px)',
+                  fontSize: 'clamp(1.75rem, 5.2vw, 76px)',
                   backgroundImage:
                     'linear-gradient(110deg, #F0F9FF 0%, #BAE6FD 52%, #38BDF8 100%)',
                 }}
@@ -299,7 +299,7 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
           <h1
             aria-label="Hi, I'm Harshit"
             className="font-kanit font-black uppercase whitespace-nowrap leading-[0.84] tracking-[-0.03em] flex items-center justify-center"
-            style={{ fontSize: 'clamp(4.2rem, 18.2vw, 256px)' }}
+            style={{ fontSize: 'clamp(3.1rem, 15.6vw, 256px)' }}
           >
             {HERO_NAME_CHARS.map((char, idx) => (
               <motion.span
@@ -349,12 +349,12 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
          ===================================================================== */}
       <div
         data-hero-spline
-        className="absolute inset-x-0 bottom-0 top-[76px] sm:top-[68px] z-20 flex items-end justify-center pointer-events-none touch-pan-y will-change-transform"
+        className="absolute inset-x-0 bottom-0 top-[110px] sm:top-[68px] z-20 flex items-end justify-center pointer-events-none touch-pan-y will-change-transform"
         style={{ touchAction: 'pan-y' }}
       >
         {/* Rim Contrast Glow Directly Behind Robot's Black Torso */}
         <div
-          className="absolute left-1/2 top-[48%] -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[460px] h-[360px] sm:h-[480px] rounded-full pointer-events-none"
+          className="absolute left-1/2 top-[52%] sm:top-[48%] -translate-x-1/2 -translate-y-1/2 w-[260px] sm:w-[460px] h-[300px] sm:h-[480px] rounded-full pointer-events-none"
           style={{
             background:
               'radial-gradient(circle, rgba(215, 226, 234, 0.16) 0%, rgba(56, 189, 248, 0.11) 42%, transparent 72%)',
@@ -363,7 +363,7 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
 
         <div
           data-cursor-text="DRAG 3D"
-          className="w-full max-w-[780px] h-full relative z-10 pointer-events-auto touch-pan-y"
+          className="w-full max-w-[780px] h-full relative z-10 pointer-events-none sm:pointer-events-auto touch-pan-y scale-[0.68] sm:scale-100 origin-bottom"
           style={{ touchAction: 'pan-y' }}
         >
           <SplineScene
@@ -381,19 +381,19 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
          ===================================================================== */}
       <div
         data-hero-bottom
-        className="relative z-30 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 pb-5 sm:pb-8 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 pointer-events-none"
+        className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pb-3.5 sm:pb-8 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-3 sm:gap-4 pointer-events-none"
       >
         {/* Bottom-Left: Clean Identity Stamp */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, delay: 0.15, ease: 'easeOut' }}
-          className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 pointer-events-auto"
+          className="flex flex-col items-center sm:items-start text-center sm:text-left gap-0.5 sm:gap-1 pointer-events-auto"
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#D7E2EA]/60">
+          <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.18em] text-[#D7E2EA]/60">
             B.Tech CSE &apos;28 — IIIT Kota
           </span>
-          <p className="font-sans text-xs sm:text-sm font-medium text-white/90 max-w-[300px] leading-snug">
+          <p className="font-sans text-xs sm:text-sm font-medium text-white/90 max-w-[280px] sm:max-w-[300px] leading-snug">
             Software Engineer — Backend, C++ &amp; Applied AI
           </p>
         </motion.div>
@@ -423,7 +423,7 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, delay: 0.25, ease: 'easeOut' }}
-          className="flex items-center gap-2.5 pointer-events-auto"
+          className="flex items-center gap-2 sm:gap-2.5 pointer-events-auto flex-wrap justify-center sm:justify-end"
         >
           <a
             href="https://github.com/Harshit-ops-code"
@@ -433,9 +433,9 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
             data-cursor-text="GITHUB"
             onClick={() => playPop()}
             onMouseEnter={() => playTick()}
-            className="w-10 h-10 rounded-full bg-[#06080f]/85 hover:bg-white/15 border border-white/15 hover:border-white/35 flex items-center justify-center text-white/80 hover:text-white transition-all active:scale-95"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#06080f]/85 hover:bg-white/15 border border-white/15 hover:border-white/35 flex items-center justify-center text-white/80 hover:text-white transition-all active:scale-95"
           >
-            <GithubIcon size={16} />
+            <GithubIcon size={15} />
           </a>
 
           <a
@@ -446,9 +446,9 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
             data-cursor-text="LINKEDIN"
             onClick={() => playPop()}
             onMouseEnter={() => playTick()}
-            className="w-10 h-10 rounded-full bg-[#06080f]/85 hover:bg-sky-500/20 border border-white/15 hover:border-sky-400/40 flex items-center justify-center text-white/80 hover:text-sky-300 transition-all active:scale-95"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#06080f]/85 hover:bg-sky-500/20 border border-white/15 hover:border-sky-400/40 flex items-center justify-center text-white/80 hover:text-sky-300 transition-all active:scale-95"
           >
-            <LinkedinIcon size={16} />
+            <LinkedinIcon size={15} />
           </a>
 
           <a
@@ -457,9 +457,9 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
             data-cursor-text="RESUME PDF"
             onClick={() => playPop()}
             onMouseEnter={() => playTick()}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#06080f]/85 hover:bg-white/15 border border-white/15 hover:border-white/35 text-white/90 hover:text-white text-xs sm:text-sm font-sans font-medium transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-[#06080f]/85 hover:bg-white/15 border border-white/15 hover:border-white/35 text-white/90 hover:text-white text-xs sm:text-sm font-sans font-medium transition-all active:scale-95"
           >
-            <Download size={14} />
+            <Download size={13} />
             <span>Resume</span>
           </a>
 
@@ -471,11 +471,11 @@ export const Hero: React.FC<HeroProps> = ({ revealReady = true }) => {
             }}
             onMouseEnter={() => playTick()}
             data-cursor-text="EXPLORE ↓"
-            className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-[#D7E2EA] text-black text-xs sm:text-sm font-sans font-semibold transition-all shadow-[0_10px_30px_rgba(255,255,255,0.18)] active:scale-95 cursor-pointer"
+            className="group flex items-center gap-1.5 sm:gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-white hover:bg-[#D7E2EA] text-black text-xs sm:text-sm font-sans font-semibold transition-all shadow-[0_10px_30px_rgba(255,255,255,0.18)] active:scale-95 cursor-pointer"
           >
             <span>Explore Works</span>
             <ArrowUpRight
-              size={15}
+              size={14}
               className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
             />
           </button>

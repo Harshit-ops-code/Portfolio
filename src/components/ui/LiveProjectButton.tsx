@@ -21,7 +21,7 @@ export const LiveProjectButton: React.FC<LiveProjectButtonProps> = ({
       whileTap={{ scale: 0.96 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       onClick={onClick}
-      className={`relative inline-flex items-center justify-center rounded-full border-2 border-[#D7E2EA] text-[#D7E2EA] font-medium uppercase tracking-widest hover:bg-[#D7E2EA]/10 transition-colors duration-200 cursor-pointer select-none px-6 py-2.5 sm:px-8 sm:py-3 text-xs sm:text-sm font-mono ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-full border-2 border-[#D7E2EA] text-[#D7E2EA] font-medium uppercase tracking-widest hover:bg-[#D7E2EA]/10 transition-colors duration-200 cursor-pointer select-none px-4 py-2 sm:px-8 sm:py-3 text-[11px] sm:text-sm font-mono ${className}`}
       {...props}
     >
       <span>{label}</span>

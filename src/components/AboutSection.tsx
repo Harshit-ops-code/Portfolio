@@ -335,7 +335,7 @@ export const AboutSection: React.FC = () => {
         >
           <div
             data-cursor-text="PHOTO"
-            className="relative h-full min-h-[420px] sm:min-h-[460px] rounded-3xl overflow-hidden bg-[#090a0f] border border-white/15 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.9)]"
+            className="relative h-full min-h-[340px] sm:min-h-[460px] rounded-3xl overflow-hidden bg-[#090a0f] border border-white/15 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.9)]"
           >
             <img
               data-about-photo
@@ -506,7 +506,7 @@ export const AboutSection: React.FC = () => {
             </h3>
           </div>
 
-          <div className="inline-flex items-center p-1 rounded-full bg-white/[0.04] border border-white/10 self-start md:self-auto">
+          <div className="inline-flex max-w-full overflow-x-auto scrollbar-none items-center p-1 rounded-full bg-white/[0.04] border border-white/10 self-start md:self-auto">
             {TRACK_TABS.map((tab) => {
               const active = activeTrack === tab.id;
               return (

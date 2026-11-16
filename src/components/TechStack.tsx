@@ -732,21 +732,23 @@ export const TechStack: React.FC = () => {
 
           <div className="flex items-center gap-2 font-mono text-[11px] text-white/50">
             <Keyboard size={13} className="text-white/70" />
-            <span>Type on physical keyboard or drag orb to rotate</span>
+            <span className="hidden sm:inline">Type on physical keyboard or drag orb to rotate</span>
+            <span className="sm:hidden">Drag orb to rotate or tap keycaps</span>
           </div>
         </div>
 
         {/* 3D Keycap Orb Canvas */}
         <div
           data-cursor-text="DRAG ORB"
-          className="relative w-full rounded-2xl overflow-hidden border border-white/5 bg-black/50 shadow-inner"
+          className="relative w-full rounded-2xl overflow-hidden border border-white/5 bg-black/50 shadow-inner touch-pan-y"
+          style={{ touchAction: 'pan-y' }}
         >
           <KeycapOrb
             keys={HARSHIT_KEYS}
             rings={10}
-            scale={0.72}
+            scale={isMobile ? 0.8 : 0.72}
             speed={-0.6}
-            height="460px"
+            height={isMobile ? "330px" : "460px"}
             background="#030306"
             glow="#2563eb"
             onKeyPress={handleKeycapPress}

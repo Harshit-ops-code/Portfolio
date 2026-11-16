@@ -295,10 +295,15 @@ export const InteractiveHalftoneWordmark: React.FC<InteractiveHalftoneWordmarkPr
   return (
     <div
       ref={rootRef}
-      className={`relative w-full h-full overflow-hidden select-none cursor-pointer bg-transparent ${className}`}
+      className={`relative w-full h-full overflow-hidden select-none cursor-pointer bg-transparent touch-pan-y ${className}`}
+      style={{ touchAction: 'pan-y' }}
       data-cursor-text="RIPPLE"
     >
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block bg-transparent" />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full block bg-transparent"
+        style={{ touchAction: 'pan-y' }}
+      />
       <span className="sr-only">{wordmark}</span>
     </div>
   );

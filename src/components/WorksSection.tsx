@@ -255,13 +255,23 @@ const StickyProjectCard: React.FC<StickyCardProps> = ({
   const displayedLabel =
     activePreview === 'primary' ? project.images.primaryLabel : project.images.secondaryLabel;
 
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobileScreen(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check, { passive: true });
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   return (
     <div
       ref={wrapperRef}
-      className="h-[82vh] flex items-start justify-center sticky select-none"
+      className="min-h-[500px] sm:min-h-0 sm:h-[82vh] flex items-start justify-center sticky select-none"
       style={{
-        // Sits cleanly below fixed floating navbar dock (top-5, ends ~68px)
-        top: `calc(5.25rem + ${index * 22}px)`,
+        // Sits cleanly below fixed floating navbar dock
+        top: isMobileScreen
+          ? `calc(4.25rem + ${index * 12}px)`
+          : `calc(5.25rem + ${index * 22}px)`,
         zIndex: index + 10,
         perspective: '1400px',
       }}
@@ -356,11 +366,11 @@ const StickyProjectCard: React.FC<StickyCardProps> = ({
         <div className="relative z-10 flex flex-col lg:flex-row gap-3.5 sm:gap-5 items-stretch">
           {/* LEFT COLUMN (40%): Architecture Preview + Dark Metrics Card */}
           <div className="w-full lg:w-[40%] flex flex-col gap-3 sm:gap-4 justify-between">
-            {/* Top Left: Framed Secondary Architecture View (aspect 2.1:1 matches raw 1024x480 cleanly) */}
+            {/* Top Left: Framed Secondary Architecture View (hidden on mobile, accessible via switcher & zoom) */}
             <div
               onClick={() => onOpenGallery(project, 1)}
               data-cursor-text="INSPECT"
-              className="w-full aspect-[16/8.2] max-h-[195px] overflow-hidden rounded-[22px] sm:rounded-[28px] bg-[#13151d] border border-white/12 p-1.5 sm:p-2 relative group/mini cursor-pointer shadow-inner"
+              className="hidden sm:block w-full aspect-[16/8.2] max-h-[195px] overflow-hidden rounded-[22px] sm:rounded-[28px] bg-[#13151d] border border-white/12 p-1.5 sm:p-2 relative group/mini cursor-pointer shadow-inner"
             >
               <div className="w-full h-full rounded-[16px] sm:rounded-[22px] overflow-hidden relative bg-white/5">
                 <img

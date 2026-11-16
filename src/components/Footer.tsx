@@ -403,7 +403,10 @@ export const Footer: React.FC<FooterProps> = ({ onShowToast }) => {
             INTERACTIVE HALFTONE WORDMARK (Full-Bleed Transparent Layer)
             Covers 100% of the hands section seamlessly — no box, no edges, no lines.
             ==================================================================== */}
-        <div className="absolute inset-0 w-full h-full z-0 pointer-events-auto">
+        <div 
+          className="absolute inset-0 w-full h-full z-0 pointer-events-auto touch-pan-y"
+          style={{ touchAction: 'pan-y' }}
+        >
           <InteractiveHalftoneWordmark
             wordmark="HARSHIT"
             palette={{
